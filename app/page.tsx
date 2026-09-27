@@ -301,10 +301,16 @@ export default function Home() {
   if (!profile) return <div className="public-home">
     <header className="public-topbar"><a className="brand" href="/" aria-label="RuleX home"><span className="brand-mark">R<span>x</span></span><strong>RuleX</strong></a><span className="auth-network"><span className="network-indicator" /> SEPOLIA TESTNET</span></header>
     <main className="public-content">
-      <div className="public-intro"><span className="auth-kicker">RULEX // FREELANCE MILESTONE ESCROW</span><h1>Know what happens next.<br /><em>At every step.</em></h1><p>RuleX helps clients and freelancers agree on work, secure a test budget, and release payments one milestone at a time.</p><div className="public-actions"><a className="button button-primary" href="/register">Create an account <ArrowRight size={18} /></a><a className="button button-outline" href="/login">Sign in</a></div></div>
+      <div className="public-intro"><span className="auth-kicker">RULEX · MILESTONE ESCROW PROTOTYPE</span><h1>Clear agreements.<br /><em>Safer test payments.</em></h1><p>RuleX is a university prototype for clients and freelancers to test milestone escrow on Ethereum Sepolia. It uses test tokens only and never asks for a seed phrase or private key.</p><div className="public-actions"><a className="button button-primary" href="/register">Create a test account <ArrowRight size={18} /></a><a className="button button-outline" href="/login">Sign in</a><a className="button button-quiet" href="/trust"><ShieldCheck size={17} /> Trust & safety</a></div></div>
+      <section className="trust-strip" aria-label="RuleX safety summary">
+        <div><ShieldCheck size={20} /><span><strong>Sepolia testnet only</strong><small>No real-value RuleX tokens are used.</small></span></div>
+        <div><LockKeyhole size={20} /><span><strong>Your wallet stays in your control</strong><small>Every signature and transaction is confirmed in MetaMask.</small></span></div>
+        <div><FileCheck2 size={20} /><span><strong>Public project information</strong><small>Review the source code and deployed contract before testing.</small></span></div>
+        <div className="trust-links"><a href="https://github.com/thanatwwp/rulex" target="_blank" rel="noreferrer">GitHub <ExternalLink size={13} /></a><a href={EXPLORER + "/address/" + DEFAULT_ESCROW} target="_blank" rel="noreferrer">Sepolia contract <ExternalLink size={13} /></a></div>
+      </section>
       <JourneyAnimation />
     </main>
-    <footer className="auth-footer"><span>RuleX · Educational prototype</span><span>Ethereum Sepolia · Test tokens only</span></footer>
+    <footer className="auth-footer"><span>RuleX · University prototype · Not audited</span><span><a href="/trust">Trust & safety</a> · Ethereum Sepolia · Test tokens only</span></footer>
   </div>;
 
   return <div className="site-shell">
@@ -319,30 +325,31 @@ export default function Home() {
         <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
           <DialogTrigger asChild><button className="header-link" type="button">Contract <ChevronRight size={15} /></button></DialogTrigger>
           <DialogContent className="contract-dialog">
-            <DialogHeader><DialogTitle>Contract connection</DialogTitle><DialogDescription>Enter the deployed RuleXEscrow address on Sepolia. RuleX reads the token address from that contract.</DialogDescription></DialogHeader>
+            <DialogHeader><DialogTitle>Published Sepolia contract</DialogTitle><DialogDescription>RuleX uses one published escrow address for this prototype. Users cannot silently switch the production site to another contract.</DialogDescription></DialogHeader>
             <label className="form-label" htmlFor="contract-address">RuleXEscrow address</label>
-            <input className="field monospace" id="contract-address" value={addressInput} onChange={e => setAddressInput(e.target.value)} placeholder="0x…" spellCheck={false} />
+            <input className="field monospace" id="contract-address" value={escrowAddress} readOnly spellCheck={false} />
             {tokenAddress && <div className="contract-info"><span>Payment token</span><code>{tokenAddress}</code></div>}
-            <button className="button button-primary full-width" type="button" onClick={useContract}>Use this contract</button>
+            <a className="button button-outline full-width" href={EXPLORER + "/address/" + escrowAddress} target="_blank" rel="noreferrer">View contract on Etherscan <ExternalLink size={15} /></a>
+            <a className="button button-quiet full-width" href="/trust"><ShieldCheck size={15} /> Read RuleX trust & safety</a>
           </DialogContent>
         </Dialog>
         {account ? <button className="wallet-connected" type="button" onClick={!walletMatches ? () => void changeWallet() : onSepolia ? () => void refresh() : switchNetwork}><span className="wallet-status" />{onSepolia ? shortAddress(account) : "Switch to Sepolia"}{onSepolia && walletMatches ? <RefreshCw size={15} /> : <ArrowRight size={15} />}</button>
-          : <button className="button button-primary" onClick={() => void connect()}><Wallet size={17} /> Connect wallet</button>}
+          : <button className="button button-primary" onClick={() => void connect()}><Wallet size={17} /> Connect MetaMask (Sepolia)</button>}
         {account && <button className="header-link change-wallet-button" type="button" onClick={() => void changeWallet()} disabled={changingWallet || Boolean(busy) || Boolean(txState?.pending)}><Wallet size={16} /> {changingWallet ? "Opening MetaMask…" : "Change wallet"}</button>}
         <button className="header-link logout-button" type="button" onClick={() => void logout()}><LogOut size={16} /> Log out</button>
       </div>
     </div></header>
 
     <main className="app-container">
-      <div className="page-heading"><div><div className="eyebrow">RULEX // MILESTONE CONTROL <span /></div><h1>Your agreements, in orbit.</h1><p>Track work, secure test funds, and release payment one milestone at a time. <a className="how-it-works-link" href="#how-rulex-works">See how it works ↓</a></p></div><div className="heading-actions"><button className="button button-outline" type="button" onClick={() => ready ? void refresh() : void connect()} disabled={loading}><RefreshCw size={16} className={loading ? "spinning" : ""} /> Refresh</button><button className="button button-primary" type="button" onClick={() => setTab("create")}><Plus size={17} /> New agreement</button></div></div>
+      <div className="page-heading"><div><div className="eyebrow">RULEX · MILESTONE ESCROW <span /></div><h1>Your agreements.</h1><p>Track work, secure test funds, and release payment one milestone at a time. <a className="how-it-works-link" href="#how-rulex-works">See how it works ↓</a></p></div><div className="heading-actions"><button className="button button-outline" type="button" onClick={() => ready ? void refresh() : void connect()} disabled={loading}><RefreshCw size={16} className={loading ? "spinning" : ""} /> Refresh</button><button className="button button-primary" type="button" onClick={() => setTab("create")}><Plus size={17} /> New agreement</button></div></div>
       {account && !walletMatches && <div className="notice warning"><CircleHelp size={20} /><div><strong>This wallet has a different RuleX account</strong><span>You selected {shortAddress(account)}. Sign in or register with it before using the dashboard, or change back to {shortAddress(profile.wallet)}.</span></div><button type="button" onClick={() => void logout()}>Continue with this wallet <ArrowRight size={16} /></button></div>}
-      {!account && <div className="notice"><Wallet size={19} /><div><strong>Connect MetaMask to get started</strong><span>Your wallet signs each step. RuleX reads projects from Sepolia.</span></div><button onClick={() => void connect()}>Connect <ArrowRight size={16} /></button></div>}
+      {!account && <div className="notice"><Wallet size={19} /><div><strong>Connect MetaMask on Sepolia</strong><span>RuleX never asks for your seed phrase or private key. MetaMask shows every signature and transaction before you approve it.</span></div><button onClick={() => void connect()}>Connect <ArrowRight size={16} /></button></div>}
       {account && !onSepolia && <div className="notice warning"><CircleHelp size={20} /><div><strong>Switch to Ethereum Sepolia</strong><span>RuleX uses test RUSD and Sepolia ETH for gas.</span></div><button onClick={switchNetwork}>Switch network <ArrowRight size={16} /></button></div>}
       {txState && <div className="transaction-banner"><span className={"transaction-icon " + (txState.pending ? "is-pending" : "")}>{txState.pending ? <LoaderCircle size={17} className="spinning" /> : <Check size={17} />}</span><div><strong>{txState.label}</strong><span>{txState.pending ? "Waiting for confirmation" : "Confirmed on Sepolia"}</span></div><a href={EXPLORER + "/tx/" + txState.hash} target="_blank" rel="noreferrer">View transaction <ExternalLink size={14} /></a><button type="button" aria-label="Dismiss transaction" onClick={() => setTxState(null)}><X size={16} /></button></div>}
 
       <div className="workspace-grid"><section className="primary-column">
         <Tabs value={tab} onValueChange={setTab}>
-          <div className="workspace-header"><TabsList className="workspace-tabs"><TabsTrigger value="projects">Projects</TabsTrigger><TabsTrigger value="create">Create agreement</TabsTrigger><TabsTrigger value="token">Test token</TabsTrigger></TabsList><span className="workspace-context">{ready ? projects.length + " of your projects" : "Connect a wallet to view projects"}</span></div>
+          <div className="workspace-header"><TabsList className="workspace-tabs"><TabsTrigger value="projects">Projects</TabsTrigger><TabsTrigger value="create">Create agreement</TabsTrigger><TabsTrigger value="token">Demo token</TabsTrigger></TabsList><span className="workspace-context">{ready ? projects.length + " of your projects" : "Connect a wallet to view projects"}</span></div>
           <TabsContent value="projects" className="tab-body">
             <div className="section-header"><div><h2>Your agreements</h2><p>Projects you created or joined as the freelancer.</p></div></div>
             {ready && projects.length ? <div className="project-list">{projects.map(pr => <button key={pr.id} className={"project-row " + (selected?.id === pr.id ? "is-selected" : "")} onClick={() => void loadProject(pr.id, account, escrowAddress, tokenAddress)}><span className="project-icon"><Layers3 size={19} /></span><span className="project-main"><strong>{pr.title || "Project #" + pr.id}</strong><small>#{pr.id} · {pr.client.toLowerCase() === account.toLowerCase() ? "You are the client" : "You are the freelancer"}</small></span><span className={"status-pill status-" + pr.status}>{statusName[pr.status]}</span><span className="project-amount">{money(pr.totalAmount, decimals)} {symbol}</span><ChevronRight size={17} className="project-chevron" /></button>)}</div>
