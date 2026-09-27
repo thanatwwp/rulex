@@ -1116,3 +1116,66 @@ html.dark .trust-warning p { color: #c7b98f !important; }
   .theme-toggle:not(.is-compact) .theme-toggle-text { display: none; }
   .theme-toggle:not(.is-compact) { width: 40px; min-width: 40px; padding: 8px; }
 }
+
+
+/* Definitive theme tokens.
+   These must stay at the end of the stylesheet because the legacy control-room
+   block above also defines :root variables. */
+:root,
+html.light {
+  color-scheme: light;
+  --background: #f4f7f9;
+  --foreground: #153047;
+  --card: #ffffff;
+  --card-foreground: #153047;
+  --popover: #ffffff;
+  --popover-foreground: #153047;
+  --primary: #087f7b;
+  --primary-foreground: #ffffff;
+  --secondary: #eaf2f4;
+  --secondary-foreground: #24495c;
+  --muted: #edf3f5;
+  --muted-foreground: #647a86;
+  --accent: #e8f5f2;
+  --accent-foreground: #116c67;
+  --destructive: #c13a4d;
+  --border: #d7e4e8;
+  --input: #ccdce1;
+  --ring: #319d95;
+}
+
+html.dark {
+  color-scheme: dark;
+  --background: #0d151c;
+  --foreground: #eaf2f5;
+  --card: #121d25;
+  --card-foreground: #eaf2f5;
+  --popover: #121d25;
+  --popover-foreground: #eaf2f5;
+  --primary: #70d8ce;
+  --primary-foreground: #06201d;
+  --secondary: #192730;
+  --secondary-foreground: #d9e7ea;
+  --muted: #18242d;
+  --muted-foreground: #91a6ae;
+  --accent: #17302e;
+  --accent-foreground: #a5e3dc;
+  --destructive: #ef6b7e;
+  --border: #2d3d47;
+  --input: #354851;
+  --ring: #5dbab1;
+}
+
+/* Elements that use shared shadcn/Tailwind theme tokens. */
+body {
+  background: var(--background) !important;
+  color: var(--foreground) !important;
+}
+[data-slot="dialog-content"],
+[data-slot="popover-content"],
+[data-slot="dropdown-menu-content"],
+[data-slot="select-content"] {
+  background: var(--popover) !important;
+  color: var(--popover-foreground) !important;
+  border-color: var(--border) !important;
+}
