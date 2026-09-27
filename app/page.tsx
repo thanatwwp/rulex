@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Toaster } from "@/components/ui/sonner";
 import JourneyAnimation from "@/components/journey-animation";
+import RulexAiAssistant from "@/components/rulex-ai-assistant";
 import { cleanError, escrowAbi, money, shortAddress, starterDraft, statusName, tokenAbi, type Milestone, type Project } from "@/lib/rulex";
 import { selectWallet, walletSelectionError } from "@/lib/wallet-selection";
 import type { Profile } from "@/lib/auth";
@@ -390,5 +391,21 @@ export default function Home() {
       <div className="dashboard-journey"><JourneyAnimation /></div>
       <footer className="footer"><span>RuleX · Educational Sepolia prototype</span><span>AI drafts need human review. Payments require wallet confirmation.</span></footer>
     </main>
+    <RulexAiAssistant
+      activeTab={tab}
+      project={selected ? {
+        id: selected.id,
+        title: selected.title || `Project #${selected.id}`,
+        description: selected.description || "",
+        status: currentStatus,
+        currentMilestone: current ? {
+          description: current.description,
+          submission: current.submission || "",
+          amount: `${money(current.amount, decimals)} ${symbol}`,
+        } : undefined,
+      } : undefined}
+      draft={{ title, description, milestones: draft }}
+      onOpenCreate={() => setTab("create")}
+    />
   </div>;
 }
