@@ -57,7 +57,16 @@ export default function AuthScreen({ mode }: { mode: "register" | "login" }) {
       if (!challengeId || !message) throw new Error("Could not create a wallet challenge.");
       const signer = await provider.getSigner(address);
       const signature = await signer.signMessage(message);
-      await postJson(signup ? "/api/auth/register" : "/api/auth/login", { challengeId, signature, ...(signup ? { displayName: name.trim(), role } : {}) });
+      const storageKey = `rulex-profile-${address.toLowerCase()}`;
+      const saved = !signup ? (() => {
+        try { return JSON.parse(localStorage.getItem(storageKey) || "null") as { displayName?: string; role?: "client" | "freelancer" } | null; }
+        catch { return null; }
+      })() : null;
+      const profileData = signup
+        ? { displayName: name.trim(), role }
+        : { displayName: saved?.displayName || `User ${address.slice(0, 6)}`, role: saved?.role || "client" as const };
+      await postJson(signup ? "/api/auth/register" : "/api/auth/login", { challengeId, signature, ...profileData });
+      localStorage.setItem(storageKey, JSON.stringify(profileData));
       window.location.assign("/");
     } catch (cause) { setError(cleanError(cause)); setBusy(false); }
   }
