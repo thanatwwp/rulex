@@ -1,4 +1,4 @@
-import { ExternalLink, Github, LockKeyhole, ShieldCheck, WalletCards } from "lucide-react";
+import { ExternalLink, LockKeyhole, ShieldCheck, WalletCards } from "lucide-react";
 
 const ESCROW = "0xFad4B34f9341643Ea3804Ba991d1961165Cac335";
 const ETHERSCAN = "https://sepolia.etherscan.io/address/" + ESCROW;
@@ -35,7 +35,7 @@ export default function TrustPage() {
           <div className="trust-fact"><span>Status</span><strong>Educational prototype · Not audited</strong></div>
           <div className="trust-actions">
             <a className="button button-outline" href={ETHERSCAN} target="_blank" rel="noreferrer">View contract on Etherscan <ExternalLink size={15}/></a>
-            <a className="button button-outline" href="https://github.com/thanatwwp/rulex" target="_blank" rel="noreferrer"><Github size={15}/> Review source on GitHub</a>
+            <a className="button button-outline" href="https://github.com/thanatwwp/rulex" target="_blank" rel="noreferrer">Review source on GitHub <ExternalLink size={15}/></a>
           </div>
         </section>
 
