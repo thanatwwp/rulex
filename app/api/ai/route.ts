@@ -1,4 +1,5 @@
 import { getSessionProfile, jsonError, sameOrigin } from "@/lib/auth";
+import { callOpenAI, outputText, RulexAiUpstreamError } from "@/lib/openai";
 
 type AiMode = "help" | "risk" | "submission";
 
@@ -10,7 +11,7 @@ export async function POST(request: Request) {
   if (!sameOrigin(request)) return jsonError("Invalid request origin.", 403);
   if (!await getSessionProfile(request)) return jsonError("Sign in to use RuleX AI.", 401);
 
-  const key = process.env.OPENAI_API_KEY;
+  const key = process.env.OPENAI_API_KEY?.trim();
   if (!key) return Response.json({ error: "RuleX AI is not configured yet." }, { status: 503 });
 
   try {
@@ -23,31 +24,25 @@ export async function POST(request: Request) {
 
     const contextJson = JSON.stringify(body.context ?? null).slice(0, 9000);
     const instructions = [
-      "You are RuleX AI, an assistant inside a university milestone-escrow prototype.",
-      "Be concise, practical, and easy for clients and freelancers to understand.",
+      "You are RuleX AI, a helpful assistant inside a university milestone-escrow prototype on Ethereum Sepolia.",
+      "Answer in clear, practical language for clients and freelancers.",
+      "Use the supplied RuleX page context when it is relevant.",
       "Never claim you can approve work, release funds, sign transactions, or make legal determinations.",
-      "Never instruct the user to share a seed phrase, private key, password, or secret API key.",
-      "If reviewing a submission, distinguish visible evidence from anything that still needs manual verification.",
-      "If analyzing risk, focus on scope clarity, deliverables, acceptance criteria, timelines, revisions, payment milestones, and evidence.",
-      "Keep answers under 170 words unless the user explicitly asks for detail.",
-      "End important risk or submission reviews with a short reminder that the human user decides and MetaMask confirms any blockchain action.",
+      "Never ask for a seed phrase, private key, wallet password, or secret API key.",
+      "For submission review, separate visible evidence from items that still require manual verification.",
+      "For risk analysis, focus on scope clarity, deliverables, acceptance criteria, timeline, revisions, milestone amounts, and evidence.",
+      "Keep normal answers under 170 words.",
+      "For important risk or submission reviews, remind the user that the human decides and MetaMask confirms blockchain actions.",
     ].join(" ");
 
-    const response = await fetch("https://api.openai.com/v1/responses", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: "gpt-4o-mini",
-        store: false,
-        instructions,
-        input: `Mode: ${mode as AiMode}\nUser request: ${question}\nRuleX page context: ${contextJson}`,
-      }),
-    });
+    const data = await callOpenAI({
+      instructions,
+      input: `Mode: ${mode as AiMode}\nUser request: ${question}\nRuleX page context: ${contextJson}`,
+      max_output_tokens: 900,
+    }, key);
 
-    if (!response.ok) return Response.json({ error: "RuleX AI could not respond. Please try again." }, { status: 502 });
-    const data = await response.json() as { output?: Array<{ content?: Array<{ type?: string; text?: string }> }> };
-    const answer = data.output?.flatMap(item => item.content || []).filter(item => item.type === "output_text").map(item => item.text || "").join("").trim() || "";
-    if (!answer) return Response.json({ error: "RuleX AI returned an empty response." }, { status: 502 });
+    const answer = outputText(data);
+    if (!answer) return Response.json({ error: "RuleX AI returned an empty response. Please try again." }, { status: 502 });
 
     const lowered = answer.toLowerCase();
     const tone = lowered.includes("risk") || lowered.includes("missing") || lowered.includes("unclear") || lowered.includes("verify")
@@ -57,7 +52,11 @@ export async function POST(request: Request) {
         : "neutral";
 
     return Response.json({ answer: answer.slice(0, 2400), tone });
-  } catch {
-    return Response.json({ error: "Unable to contact RuleX AI." }, { status: 500 });
+  } catch (error) {
+    if (error instanceof RulexAiUpstreamError) {
+      return Response.json({ error: error.message }, { status: error.status });
+    }
+    console.error("RuleX AI route error", { name: error instanceof Error ? error.name : "unknown" });
+    return Response.json({ error: "Unable to contact RuleX AI. Please try again." }, { status: 500 });
   }
 }
