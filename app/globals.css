@@ -732,3 +732,387 @@ body,
   .trust-grid { grid-template-columns: 1fr; }
   .trust-fact { grid-template-columns: 1fr; gap: 4px; }
 }
+
+
+/* =========================================================
+   RuleX light / dark theme system
+   Light is the professional trust-focused default palette.
+   Dark keeps the same trustworthy visual language, not the old hacker theme.
+   ========================================================= */
+
+:root { color-scheme: light; }
+html.dark { color-scheme: dark; }
+
+.topbar-utilities {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.theme-toggle {
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 8px 11px;
+  border: 1px solid #d4e1e5;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #31556a;
+  font-size: .78rem;
+  font-weight: 750;
+  cursor: pointer;
+  transition: background .18s ease, border-color .18s ease, color .18s ease, transform .18s ease;
+}
+.theme-toggle:hover {
+  background: #f1f8f7;
+  border-color: #9ccbc6;
+  color: #0b716c;
+}
+.theme-toggle:active { transform: translateY(1px); }
+.theme-toggle.is-compact {
+  width: 40px;
+  min-width: 40px;
+  padding: 8px;
+}
+.theme-toggle-icon {
+  display: inline-grid;
+  place-items: center;
+}
+.theme-toggle-text { line-height: 1; }
+
+/* Dark palette */
+html.dark body,
+html.dark .site-shell,
+html.dark .auth-shell,
+html.dark .public-home,
+html.dark .auth-gate,
+html.dark .trust-page {
+  background: #0d151c !important;
+  color: #eaf2f5 !important;
+}
+
+html.dark .topbar,
+html.dark .auth-topbar,
+html.dark .public-topbar {
+  background: #111c24 !important;
+  color: #eaf2f5 !important;
+  border-color: #273640 !important;
+  box-shadow: 0 1px 0 #273640 !important;
+}
+
+html.dark .topbar .brand strong,
+html.dark .auth-topbar .brand strong,
+html.dark .public-topbar .brand strong,
+html.dark .page-heading h1,
+html.dark .section-header h2,
+html.dark .detail-card h2,
+html.dark .card-header h3,
+html.dark .auth-intro h1,
+html.dark .auth-panel h2,
+html.dark .trust-hero h1,
+html.dark .trust-grid h2,
+html.dark .trust-disclosure h2,
+html.dark .trust-warning h2 {
+  color: #edf6f8 !important;
+}
+
+html.dark .auth-network,
+html.dark .network-tag {
+  color: #83d7cf !important;
+  background: #142725 !important;
+  border-color: #2b4a46 !important;
+}
+html.dark .testnet-label {
+  color: #9eb7bc !important;
+  border-color: #3b4e56 !important;
+}
+
+html.dark .theme-toggle {
+  background: #15222b;
+  border-color: #344650;
+  color: #dbe9ed;
+}
+html.dark .theme-toggle:hover {
+  background: #1b2c35;
+  border-color: #55777b;
+  color: #9fe7df;
+}
+
+html.dark .header-link,
+html.dark .change-wallet-button {
+  color: #bdd0d6 !important;
+  background: transparent !important;
+  border-color: #334750 !important;
+}
+html.dark .header-link:hover,
+html.dark .change-wallet-button:hover:not(:disabled) {
+  color: #9de2dc !important;
+  background: #17272d !important;
+  border-color: #4e7573 !important;
+}
+html.dark .profile-badge { border-color: #31424b !important; }
+html.dark .profile-badge strong { color: #e6eff2 !important; }
+html.dark .profile-badge small { color: #8bb7b5 !important; }
+html.dark .wallet-connected {
+  color: #a8e1db !important;
+  background: #162a29 !important;
+  border-color: #31534f !important;
+}
+html.dark .wallet-connected:hover { background: #1b3432 !important; }
+
+html.dark .button-primary {
+  color: #06201d !important;
+  background: #70d8ce !important;
+  border-color: #70d8ce !important;
+}
+html.dark .button-primary:hover:not(:disabled) {
+  background: #91e5dc !important;
+  border-color: #91e5dc !important;
+}
+html.dark .button-outline {
+  color: #d3e3e7 !important;
+  background: #15212a !important;
+  border-color: #344852 !important;
+}
+html.dark .button-outline:hover:not(:disabled) {
+  background: #1b2c35 !important;
+  border-color: #55777b !important;
+}
+html.dark .button-quiet { color: #8dd5cf !important; }
+html.dark .button-quiet:hover { background: #17272d !important; }
+
+html.dark .page-heading p,
+html.dark .workspace-context,
+html.dark .section-header p,
+html.dark .step-marker,
+html.dark .detail-description,
+html.dark .action-card p,
+html.dark .auth-intro > p,
+html.dark .auth-panel-subtitle,
+html.dark .auth-explain,
+html.dark .auth-switch,
+html.dark .trust-hero p,
+html.dark .trust-grid p,
+html.dark .trust-warning p {
+  color: #9fb2ba !important;
+}
+html.dark .eyebrow,
+html.dark .step-marker,
+html.dark .detail-kicker,
+html.dark .auth-kicker,
+html.dark .auth-chip,
+html.dark .auth-panel-index {
+  color: #83d7cf !important;
+}
+
+html.dark .primary-column,
+html.dark .detail-card,
+html.dark .auth-panel,
+html.dark .auth-gate-panel,
+html.dark .trust-grid article,
+html.dark .trust-disclosure,
+html.dark .trust-warning,
+html.dark .trust-strip {
+  background: #121d25 !important;
+  color: #e9f2f4 !important;
+  border-color: #2d3d47 !important;
+  box-shadow: 0 10px 34px #00000035 !important;
+}
+html.dark .primary-column { border-top-color: #2d3d47 !important; }
+html.dark .workspace-header {
+  background: #15212a !important;
+  border-color: #2b3b45 !important;
+}
+html.dark .workspace-tabs {
+  background: #0f1920 !important;
+  border-color: #2a3942 !important;
+}
+html.dark .workspace-tabs [data-slot="tabs-trigger"] { color: #9fb1b8 !important; }
+html.dark .workspace-tabs [data-slot="tabs-trigger"][data-active],
+html.dark .workspace-tabs [data-slot="tabs-trigger"][data-state="active"] {
+  color: #dff6f2 !important;
+  background: #20343a !important;
+}
+
+html.dark .project-list { border-color: #2d3d47 !important; }
+html.dark .project-row {
+  background: #14212a !important;
+  color: #e4eef1 !important;
+  border-color: #263740 !important;
+}
+html.dark .project-row:hover,
+html.dark .project-row.is-selected { background: #1a2d34 !important; }
+html.dark .project-icon,
+html.dark .empty-icon,
+html.dark .detail-placeholder-icon {
+  background: #17302f !important;
+  color: #80d4cc !important;
+}
+html.dark .project-main small,
+html.dark .empty-state p,
+html.dark .lookup-panel span,
+html.dark .form-total span,
+html.dark .form-total small,
+html.dark .form-footer p,
+html.dark .milestone-header p,
+html.dark .mint-panel p,
+html.dark .no-selection p,
+html.dark .test-note {
+  color: #8fa5ad !important;
+}
+
+html.dark .field {
+  background: #0e1820 !important;
+  color: #edf5f7 !important;
+  border-color: #354851 !important;
+}
+html.dark .field:focus {
+  border-color: #5dbab1 !important;
+  box-shadow: 0 0 0 3px #315d585f !important;
+}
+html.dark .field::placeholder { color: #70858d !important; }
+html.dark .form-label { color: #c0d0d5 !important; }
+html.dark .draft-button {
+  color: #9fe1da !important;
+  background: #17302e !important;
+  border-color: #325751 !important;
+}
+html.dark .draft-origin,
+html.dark .milestone-number,
+html.dark .add-milestone { color: #8bd6cf !important; }
+
+html.dark .escrow-meter,
+html.dark .token-summary {
+  background: #142522 !important;
+  border-color: #29423f !important;
+}
+html.dark .meter-caption > span,
+html.dark .meter-foot,
+html.dark .token-summary span { color: #98b4b1 !important; }
+html.dark .meter-track { background: #263b3a !important; }
+html.dark .no-selection {
+  background: #101a21 !important;
+  border-color: #2a3b44 !important;
+  color: #e7eff2 !important;
+}
+html.dark .three-steps span { color: #a7bdc3 !important; }
+html.dark .three-steps b {
+  background: #17302e !important;
+  color: #90ddd5 !important;
+}
+html.dark .divider { background: #2b3a43 !important; }
+
+html.dark .auth-sequence > div { border-color: #2d3d47 !important; }
+html.dark .auth-sequence span { color: #86d9d1 !important; }
+html.dark .auth-sequence strong { color: #dfeaec !important; }
+html.dark .auth-sequence small { color: #8fa5ad !important; }
+html.dark .auth-safety {
+  color: #a8c5c1 !important;
+  background: #142724 !important;
+  border-color: #2c4844 !important;
+}
+html.dark .role-card {
+  background: #101a21 !important;
+  border-color: #31424b !important;
+  color: #99acb4 !important;
+}
+html.dark .role-card.is-selected {
+  border-color: #5aaea7 !important;
+  background: #17302e !important;
+  color: #9edfd9 !important;
+}
+html.dark .role-card strong { color: #dfeaed !important; }
+html.dark .role-card span { color: #92a7af !important; }
+html.dark .auth-wallet {
+  background: #101a21 !important;
+  border-color: #31424b !important;
+  color: #c9d8dd !important;
+}
+html.dark .auth-switch { border-color: #2d3d47 !important; }
+html.dark .auth-footer { color: #8fa5ad !important; }
+html.dark .auth-trust-link { color: #8fd7cf !important; }
+
+html.dark .public-intro h1 { color: #edf6f8 !important; }
+html.dark .public-intro p { color: #9fb2ba !important; }
+html.dark .trust-strip strong { color: #dce9ec !important; }
+html.dark .trust-strip small { color: #91a6ae !important; }
+html.dark .trust-links { border-color: #2a3942 !important; }
+html.dark .trust-links a { color: #8ed8d1 !important; }
+
+html.dark .rulex-ai-launcher {
+  color: #e4eef1 !important;
+  background: #121d25 !important;
+  border-color: #31424b !important;
+  box-shadow: 0 14px 38px #0000003d !important;
+}
+html.dark .rulex-ai-launcher:hover { border-color: #55777b !important; }
+html.dark .rulex-ai-launcher-copy small { color: #8bd7d0 !important; }
+html.dark .rulex-ai-peek {
+  color: #b7cbd1 !important;
+  background: #121d25f2 !important;
+  border-color: #31424b !important;
+  box-shadow: 0 8px 22px #00000035 !important;
+}
+html.dark .rulex-ai-panel {
+  color: #e9f2f4 !important;
+  background: #101a21 !important;
+  border-color: #31424b !important;
+  box-shadow: 0 24px 64px #00000055 !important;
+}
+html.dark .rulex-ai-panel-header {
+  background: #121d25 !important;
+  border-color: #293942 !important;
+}
+html.dark .rulex-ai-title span { color: #90a8af !important; }
+html.dark .rulex-ai-character-stage {
+  background: radial-gradient(circle at 50% 55%,#1d4a4866,transparent 38%),linear-gradient(180deg,#101a21,#0d151c) !important;
+}
+html.dark .rulex-ai-actions { border-color: #293942 !important; }
+html.dark .rulex-ai-actions button {
+  color: #e2edef !important;
+  background: #15232b !important;
+  border-color: #2f444e !important;
+}
+html.dark .rulex-ai-actions button:hover {
+  background: #1b2d35 !important;
+  border-color: #4b7074 !important;
+}
+html.dark .rulex-ai-message p {
+  color: #d5e4e8 !important;
+  background: #15232b !important;
+  border-color: #2f444e !important;
+}
+html.dark .rulex-ai-message.is-user p {
+  color: #08201e !important;
+  background: #7bdacf !important;
+  border-color: #7bdacf !important;
+}
+html.dark .rulex-ai-input {
+  background: #0d171e !important;
+  border-color: #334851 !important;
+}
+html.dark .rulex-ai-input input {
+  background: transparent !important;
+  color: #e8f1f3 !important;
+}
+html.dark .rulex-ai-input input::placeholder { color: #738990 !important; }
+html.dark .rulex-ai-disclaimer { color: #70868e !important; }
+
+html.dark .trust-fact { border-color: #293942 !important; }
+html.dark .trust-fact span { color: #8fa5ad !important; }
+html.dark .trust-fact strong,
+html.dark .trust-fact code { color: #d2e0e4 !important; }
+html.dark .trust-warning {
+  background: #242014 !important;
+  border-color: #5a4d2a !important;
+}
+html.dark .trust-warning h2 { color: #e7cf8b !important; }
+html.dark .trust-warning p { color: #c7b98f !important; }
+
+@media(max-width:650px) {
+  .topbar-utilities { gap: 7px; }
+  .theme-toggle:not(.is-compact) .theme-toggle-text { display: none; }
+  .theme-toggle:not(.is-compact) { width: 40px; min-width: 40px; padding: 8px; }
+}

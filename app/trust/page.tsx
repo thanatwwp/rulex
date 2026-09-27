@@ -1,4 +1,5 @@
 import { ExternalLink, LockKeyhole, ShieldCheck, WalletCards } from "lucide-react";
+import ThemeToggle from "@/components/theme-toggle";
 
 const ESCROW = "0xFad4B34f9341643Ea3804Ba991d1961165Cac335";
 const ETHERSCAN = "https://sepolia.etherscan.io/address/" + ESCROW;
@@ -13,7 +14,7 @@ export default function TrustPage() {
     <div className="trust-page">
       <header className="public-topbar">
         <a className="brand" href="/" aria-label="RuleX home"><span className="brand-mark">R<span>x</span></span><strong>RuleX</strong></a>
-        <span className="auth-network"><span className="network-indicator" /> SEPOLIA TESTNET</span>
+        <div className="topbar-utilities"><ThemeToggle /><span className="auth-network"><span className="network-indicator" /> SEPOLIA TESTNET</span></div>
       </header>
       <main className="trust-page-main">
         <section className="trust-hero">

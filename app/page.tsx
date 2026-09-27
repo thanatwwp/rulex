@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Toaster } from "@/components/ui/sonner";
 import JourneyAnimation from "@/components/journey-animation";
 import RulexAiAssistant from "@/components/rulex-ai-assistant";
+import ThemeToggle from "@/components/theme-toggle";
 import { cleanError, escrowAbi, money, shortAddress, starterDraft, statusName, tokenAbi, type Milestone, type Project } from "@/lib/rulex";
 import { selectWallet, walletSelectionError } from "@/lib/wallet-selection";
 import type { Profile } from "@/lib/auth";
@@ -299,7 +300,7 @@ export default function Home() {
 
   if (!sessionChecked) return <div className="auth-gate"><div className="auth-gate-panel"><span className="brand-mark">R<span>x</span></span><p>Loading your RuleX account…</p></div></div>;
   if (!profile) return <div className="public-home">
-    <header className="public-topbar"><a className="brand" href="/" aria-label="RuleX home"><span className="brand-mark">R<span>x</span></span><strong>RuleX</strong></a><span className="auth-network"><span className="network-indicator" /> SEPOLIA TESTNET</span></header>
+    <header className="public-topbar"><a className="brand" href="/" aria-label="RuleX home"><span className="brand-mark">R<span>x</span></span><strong>RuleX</strong></a><div className="topbar-utilities"><ThemeToggle /><span className="auth-network"><span className="network-indicator" /> SEPOLIA TESTNET</span></div></header>
     <main className="public-content">
       <div className="public-intro"><span className="auth-kicker">RULEX · MILESTONE ESCROW PROTOTYPE</span><h1>Clear agreements.<br /><em>Safer test payments.</em></h1><p>RuleX is a university prototype for clients and freelancers to test milestone escrow on Ethereum Sepolia. It uses test tokens only and never asks for a seed phrase or private key.</p><div className="public-actions"><a className="button button-primary" href="/register">Create a test account <ArrowRight size={18} /></a><a className="button button-outline" href="/login">Sign in</a><a className="button button-quiet" href="/trust"><ShieldCheck size={17} /> Trust & safety</a></div></div>
       <section className="trust-strip" aria-label="RuleX safety summary">
@@ -319,6 +320,7 @@ export default function Home() {
       <a className="brand" href="/" aria-label="RuleX home"><span className="brand-mark">R<span>x</span></span><strong>RuleX</strong></a>
       <span className="network-tag"><span className="network-indicator" /> ETHEREUM SEPOLIA <span className="testnet-label">TESTNET</span></span>
       <div className="header-spacer" />
+      <ThemeToggle compact />
       <button className="icon-button mobile-menu" type="button" aria-label="Toggle menu" onClick={() => setMobileMenu(!mobileMenu)}><Menu size={21} /></button>
       <div className={"header-actions " + (mobileMenu ? "is-open" : "")}>
         <span className="profile-badge"><strong>{profile.displayName}</strong><small>{profile.role}</small></span>
