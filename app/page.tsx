@@ -300,15 +300,18 @@ export default function Home() {
 
   if (!sessionChecked) return <div className="auth-gate"><div className="auth-gate-panel"><span className="brand-mark">R<span>x</span></span><p>Loading your RuleX account…</p></div></div>;
   if (!profile) return <div className="public-home">
-    <header className="public-topbar"><a className="brand" href="/" aria-label="RuleX home"><span className="brand-mark">R<span>x</span></span><strong>RuleX</strong></a><div className="topbar-utilities"><ThemeToggle /><span className="auth-network"><span className="network-indicator" /> SEPOLIA TESTNET</span></div></header>
+    <header className="public-topbar">
+      <a className="brand" href="/" aria-label="RuleX home"><span className="brand-mark">R<span>x</span></span><strong>RuleX</strong></a>
+      <div className="topbar-utilities"><ThemeToggle compact /><span className="auth-network"><span className="network-indicator" /> SEPOLIA TESTNET</span></div>
+    </header>
     <main className="public-content">
-      <div className="public-intro"><span className="auth-kicker">RULEX · MILESTONE ESCROW PROTOTYPE</span><h1>Clear agreements.<br /><em>Safer test payments.</em></h1><p>RuleX is a university prototype for clients and freelancers to test milestone escrow on Ethereum Sepolia. It uses test tokens only and never asks for a seed phrase or private key.</p><div className="public-actions"><a className="button button-primary" href="/register">Create a test account <ArrowRight size={18} /></a><a className="button button-outline" href="/login">Sign in</a><a className="button button-quiet" href="/trust"><ShieldCheck size={17} /> Trust & safety</a></div></div>
-      <section className="trust-strip" aria-label="RuleX safety summary">
-        <div><ShieldCheck size={20} /><span><strong>Sepolia testnet only</strong><small>No real-value RuleX tokens are used.</small></span></div>
-        <div><LockKeyhole size={20} /><span><strong>Your wallet stays in your control</strong><small>Every signature and transaction is confirmed in MetaMask.</small></span></div>
-        <div><FileCheck2 size={20} /><span><strong>Public project information</strong><small>Review the source code and deployed contract before testing.</small></span></div>
-        <div className="trust-links"><a href="https://github.com/thanatwwp/rulex" target="_blank" rel="noreferrer">GitHub <ExternalLink size={13} /></a><a href={EXPLORER + "/address/" + DEFAULT_ESCROW} target="_blank" rel="noreferrer">Sepolia contract <ExternalLink size={13} /></a></div>
-      </section>
+      <div className="public-intro">
+        <span className="auth-kicker">RULEX // FREELANCE MILESTONE ESCROW</span>
+        <h1>Know what happens next.<br /><em>At every step.</em></h1>
+        <p>RuleX helps clients and freelancers agree on work, secure a test budget, and release payments one milestone at a time.</p>
+        <div className="public-actions"><a className="button button-primary" href="/register">Create an account <ArrowRight size={18} /></a><a className="button button-outline" href="/login">Sign in</a></div>
+        <div className="public-trust-note"><ShieldCheck size={15} /><span>University prototype · Ethereum Sepolia · Test tokens only · <a href="/trust">Trust &amp; safety</a></span></div>
+      </div>
       <JourneyAnimation />
     </main>
     <footer className="auth-footer"><span>RuleX · University prototype · Not audited</span><span><a href="/trust">Trust & safety</a> · Ethereum Sepolia · Test tokens only</span></footer>

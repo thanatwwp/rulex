@@ -1179,3 +1179,249 @@ body {
   color: var(--popover-foreground) !important;
   border-color: var(--border) !important;
 }
+
+
+/* Reference-style RuleX landing page */
+html.dark .public-home {
+  min-height: 100vh;
+  background:
+    linear-gradient(#0b1b2b 1px, transparent 1px),
+    linear-gradient(90deg, #0b1b2b 1px, transparent 1px),
+    #07111f !important;
+  background-size: 32px 32px;
+  color: #eaf8fb !important;
+}
+
+html.dark .public-topbar {
+  max-width: 1175px !important;
+  min-height: 70px !important;
+  margin: 0 auto !important;
+  padding: 0 26px !important;
+  background: transparent !important;
+  border-bottom: 1px solid #28485a !important;
+  box-shadow: none !important;
+}
+
+html.dark .public-topbar .brand strong { color: #f4fbfd !important; }
+html.dark .public-topbar .brand-mark {
+  box-shadow: 0 0 28px #5ceaf033 !important;
+}
+html.dark .public-topbar .auth-network {
+  background: transparent !important;
+  border: 0 !important;
+  padding: 0 !important;
+  color: #6ce8e4 !important;
+  letter-spacing: .12em !important;
+  font-family: ui-monospace,SFMono-Regular,Menlo,monospace !important;
+  font-size: .68rem !important;
+  font-weight: 800 !important;
+}
+html.dark .public-topbar .network-indicator {
+  box-shadow: 0 0 12px #58f0d2;
+}
+
+html.dark .public-content {
+  max-width: 1175px !important;
+  padding: 43px 26px 62px !important;
+}
+
+html.dark .public-intro {
+  max-width: 920px !important;
+  margin: 0 auto 34px !important;
+  text-align: center !important;
+}
+html.dark .public-intro .auth-kicker {
+  display: inline-block;
+  margin-top: 4px;
+  color: #6ce8e4 !important;
+  font-size: .69rem !important;
+  font-weight: 800 !important;
+  letter-spacing: .14em !important;
+  font-family: ui-monospace,SFMono-Regular,Menlo,monospace !important;
+}
+html.dark .public-intro h1 {
+  max-width: 850px;
+  margin: 24px auto 16px !important;
+  color: #f3fbfd !important;
+  font-size: clamp(3.35rem,6.2vw,5.35rem) !important;
+  font-weight: 500 !important;
+  letter-spacing: -.065em !important;
+  line-height: .98 !important;
+}
+html.dark .public-intro h1 em {
+  color: #69e1df !important;
+  font-style: normal !important;
+}
+html.dark .public-intro p {
+  max-width: 650px !important;
+  margin: 0 auto !important;
+  color: #b8d0da !important;
+  font-size: 1rem !important;
+  line-height: 1.65 !important;
+}
+html.dark .public-actions {
+  margin-top: 25px !important;
+  gap: 9px !important;
+}
+html.dark .public-actions .button {
+  min-height: 47px !important;
+  border-radius: 6px !important;
+  padding: 0 20px !important;
+  font-size: .83rem !important;
+  font-weight: 800 !important;
+}
+html.dark .public-actions .button-primary {
+  color: #06151b !important;
+  background: #66e1e4 !important;
+  border-color: #66e1e4 !important;
+}
+html.dark .public-actions .button-primary:hover {
+  background: #85ecee !important;
+  border-color: #85ecee !important;
+}
+html.dark .public-actions .button-outline {
+  color: #d9eef4 !important;
+  background: #102334 !important;
+  border-color: #355c70 !important;
+}
+html.dark .public-actions .button-outline:hover {
+  background: #163044 !important;
+  border-color: #4e8198 !important;
+}
+.public-trust-note {
+  margin: 16px auto 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: #7f9dab;
+  font-size: .7rem;
+}
+.public-trust-note svg { color: #61cec8; }
+.public-trust-note a {
+  color: #82dcd7;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* Journey panel matches the supplied reference */
+html.dark .journey {
+  background: linear-gradient(145deg,#102638,#0d2132 76%) !important;
+  border: 1px solid #3b7187 !important;
+  border-top: 2px solid #63e2df !important;
+  border-radius: 12px !important;
+  padding: 25px 26px !important;
+  box-shadow: 0 24px 60px #0107137a, inset 0 1px 0 #b7ffff12 !important;
+}
+html.dark .journey-heading {
+  border-bottom-color: #315365 !important;
+}
+html.dark .journey-heading h2 {
+  color: #f2fbfd !important;
+  font-size: clamp(1.55rem,2.5vw,2rem) !important;
+}
+html.dark .journey-heading p { color: #b9d1da !important; }
+html.dark .journey-kicker,
+html.dark .journey-step-number {
+  color: #68e6e3 !important;
+}
+html.dark .journey-controls button {
+  color: #b9f2ef !important;
+  background: #143346 !important;
+  border-color: #3c6b7f !important;
+}
+html.dark .journey-controls button:hover {
+  background: #1c4a5e !important;
+}
+html.dark .journey-copy h3 { color: #f0fafd !important; }
+html.dark .journey-copy p { color: #c4d8df !important; }
+html.dark .journey-outcome { color: #91e7c9 !important; }
+html.dark .journey-diagram {
+  border-color: #376679 !important;
+  background:
+    radial-gradient(ellipse at 50% 42%,#174a5e85,transparent 58%),
+    linear-gradient(#1a405033 1px,transparent 1px),
+    linear-gradient(90deg,#1a405033 1px,transparent 1px),
+    #0a2030 !important;
+}
+html.dark .journey-party,
+html.dark .journey-vault,
+html.dark .journey-deliverable {
+  background: #112d40 !important;
+  border-color: #50798f !important;
+  color: #e6f7fb !important;
+}
+html.dark .journey-vault {
+  border-color: #59d6d2 !important;
+  background: linear-gradient(150deg,#174d57,#123544) !important;
+}
+html.dark .journey-step {
+  background: #102a3b !important;
+  border-color: #355b6d !important;
+  color: #b5cfd8 !important;
+}
+html.dark .journey-step:hover { background: #173d4f !important; }
+html.dark .journey-step.is-active {
+  border-color: #70e7e2 !important;
+  background: #164451 !important;
+  color: #f1ffff !important;
+}
+
+/* Keep a clean, bright alternate theme */
+html.light .public-home {
+  background:
+    linear-gradient(#dce9ed 1px, transparent 1px),
+    linear-gradient(90deg, #dce9ed 1px, transparent 1px),
+    #f4f8f9 !important;
+  background-size: 32px 32px;
+}
+html.light .public-topbar {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+html.light .journey {
+  background: #ffffff !important;
+  border-color: #bed7dd !important;
+  border-top-color: #36a49c !important;
+  box-shadow: 0 20px 48px #24485a16 !important;
+}
+html.light .journey-heading h2,
+html.light .journey-copy h3 { color: #153047 !important; }
+html.light .journey-heading p,
+html.light .journey-copy p,
+html.light .journey-footnote { color: #607985 !important; }
+html.light .journey-diagram {
+  background:
+    radial-gradient(ellipse at 50% 42%,#d9f0ee,transparent 58%),
+    linear-gradient(#dce9ed 1px,transparent 1px),
+    linear-gradient(90deg,#dce9ed 1px,transparent 1px),
+    #f7fbfc !important;
+  border-color: #c4dce1 !important;
+}
+html.light .journey-party,
+html.light .journey-vault,
+html.light .journey-deliverable {
+  background: #ffffff !important;
+  color: #24485d !important;
+  border-color: #b9d2d8 !important;
+  box-shadow: 0 9px 24px #24485a12 !important;
+}
+html.light .journey-vault {
+  background: linear-gradient(150deg,#e8f7f5,#f5fbfb) !important;
+  border-color: #62bdb5 !important;
+}
+html.light .journey-step {
+  background: #f7fafb !important;
+  border-color: #c9dce1 !important;
+  color: #4f6a78 !important;
+}
+html.light .journey-step.is-active {
+  background: #eaf7f5 !important;
+  border-color: #64bdb6 !important;
+  color: #174f4b !important;
+}
+
+@media(max-width:650px) {
+  html.dark .public-content,
+  html.light .public-content { padding-left: 14px !important; padding-right: 14px !important; }
+  html.dark .public-intro h1 { font-size: clamp(2.55rem,11vw,3.65rem) !important; }
+}
