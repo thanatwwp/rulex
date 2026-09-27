@@ -2,7 +2,7 @@
 
 RuleX is a Sepolia testnet prototype for milestone-based freelance escrow. A client creates an agreement with one to three milestones, a freelancer accepts it, the client deposits test RUSD, and approval of submitted work releases that milestone's payment automatically. Both participants can request mutual cancellation.
 
-Prototype: https://rulex-escrow.thanat-pp14.chatgpt.site
+Production prototype: https://rulex-alpha.vercel.app
 
 ## Public GitHub copy
 
@@ -59,3 +59,10 @@ The interface shows statuses, milestone progress, balances, the token address, a
 - Accounts are wallet based; there are no passwords or email addresses. Registration signatures have a one-use five-minute challenge and site sessions expire after seven days.
 
 `contracts/RuleX.sol` contains an MIT SPDX identifier. Choose and add a repository-level `LICENSE` file when you decide how to license the full frontend and documentation.
+
+
+## Trust and safety
+
+RuleX is an educational Ethereum Sepolia prototype. It uses test tokens only. The website never asks for a wallet seed phrase, private key, or wallet password. Wallet ownership is proven with a free signed message, and on-chain actions require separate confirmation in MetaMask.
+
+The production frontend uses the fixed Sepolia escrow address `0xFad4B34f9341643Ea3804Ba991d1961165Cac335`. Users can inspect the source in this repository and the deployed bytecode on Sepolia Etherscan. The prototype is not audited and should not be used with real-value assets.
