@@ -65,7 +65,7 @@ The interface shows statuses, milestone progress, balances, the token address, a
 
 RuleX is an educational Ethereum Sepolia prototype. It uses test tokens only. The website never asks for a wallet seed phrase, private key, or wallet password. Wallet ownership is proven with a free signed message, and on-chain actions require separate confirmation in MetaMask.
 
-The production frontend uses the fixed Sepolia escrow address `0xFad4B34f9341643Ea3804Ba991d1961165Cac335`. Users can inspect the source in this repository and the deployed bytecode on Sepolia Etherscan. The prototype is not audited and should not be used with real-value assets.
+The production frontend uses RuleXEscrowV2 at `0xD979f8a7013aD57468Ffc8D5FDb5dA9ae8b7Dac9` for new projects. The legacy V1 escrow remains at `0xFad4B34f9341643Ea3804Ba991d1961165Cac335`. Users can inspect the source in this repository and the deployed bytecode on Sepolia Etherscan. The prototype is not audited and should not be used with real-value assets.
 
 
 ## RuleX Escrow V2 protections
@@ -84,4 +84,4 @@ The production frontend uses the fixed Sepolia escrow address `0xFad4B34f9341643
 
 For protected delivery in this prototype, the freelancer should submit only a preview/proof first. The final handoff can be an encrypted file link plus key, private repository handoff instructions, or another final-access string revealed only in the payment-claim transaction. Anything written on-chain becomes public after reveal.
 
-V2 is a new smart contract and cannot modify already deployed V1 projects. Existing V1 projects continue to follow the original rules. Deploy `RuleXEscrowV2` on Sepolia with the existing MockRUSD token address, then update the frontend escrow address to enable these protections for newly created projects.
+V2 is a new smart contract and cannot modify already deployed V1 projects. Existing V1 projects continue to follow the original rules. The deployed Sepolia V2 address used by the production frontend is `0xD979f8a7013aD57468Ffc8D5FDb5dA9ae8b7Dac9`, with the existing MockRUSD token address `0x73DB6FBC1f88F98156e225A1a0947065567bF178`.
