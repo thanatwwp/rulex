@@ -10,7 +10,7 @@ import { Toaster } from "@/components/ui/sonner";
 import JourneyAnimation from "@/components/journey-animation";
 import RulexAiAssistant from "@/components/rulex-ai-assistant";
 import ThemeToggle from "@/components/theme-toggle";
-import { cleanError, escrowAbi, money, shortAddress, starterDraft, statusName, tokenAbi, type Milestone, type Project } from "@/lib/rulex";
+import { cleanError, escrowAbi, escrowV2Abi, money, shortAddress, starterDraft, statusName, tokenAbi, type Milestone, type Project } from "@/lib/rulex";
 import { selectWallet, walletSelectionError } from "@/lib/wallet-selection";
 import type { Profile } from "@/lib/auth";
 
@@ -23,9 +23,9 @@ declare global {
 const CHAIN_ID = 11155111n;
 const DEFAULT_ESCROW = "0xFad4B34f9341643Ea3804Ba991d1961165Cac335";
 const EXPLORER = "https://sepolia.etherscan.io";
-type DraftMilestone = { description: string; amount: string };
+type DraftMilestone = { description: string; amount: string; deadline: string };
 type TxState = { label: string; hash: string; pending: boolean } | null;
-const STARTER: DraftMilestone[] = [{ description: "Design", amount: "30" }, { description: "Development", amount: "40" }, { description: "Final delivery", amount: "30" }];
+const STARTER: DraftMilestone[] = [{ description: "Design", amount: "30", deadline: "" }, { description: "Development", amount: "40", deadline: "" }, { description: "Final delivery", amount: "30", deadline: "" }];
 
 function projectFromRaw(raw: any, id: number): Project {
   return { id, client: raw.client, freelancer: raw.freelancer, title: raw.title, description: raw.projectDescription,
@@ -65,6 +65,10 @@ export default function Home() {
   const [draftNote, setDraftNote] = useState("");
   const [generating, setGenerating] = useState(false);
   const [submission, setSubmission] = useState("");
+  const [finalDelivery, setFinalDelivery] = useState("");
+  const [disputeReason, setDisputeReason] = useState("");
+  const [contractVersion, setContractVersion] = useState(1);
+  const [arbiter, setArbiter] = useState("");
   const [mintTo, setMintTo] = useState("");
   const [mintAmount, setMintAmount] = useState("150");
   const providerRef = useRef<BrowserProvider | null>(null);
@@ -75,6 +79,9 @@ export default function Home() {
   const worker = Boolean(selected && account && selected.freelancer.toLowerCase() === account.toLowerCase());
   const tokenOwner = Boolean(owner && account && owner.toLowerCase() === account.toLowerCase());
   const current = selectedMilestones[selected?.currentMilestone ?? -1];
+  const isV2 = contractVersion >= 2;
+  const isArbiter = Boolean(isV2 && arbiter && account && arbiter.toLowerCase() === account.toLowerCase());
+  const nowSeconds = Math.floor(Date.now() / 1000);
   const projectAllowance = selected ? (allowance < selected.totalAmount ? allowance : selected.totalAmount) : 0n;
   const total = useMemo(() => draft.reduce((n, m) => n + (Number(m.amount) || 0), 0), [draft]);
 
