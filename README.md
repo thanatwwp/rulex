@@ -58,7 +58,7 @@ The interface shows statuses, milestone progress, balances, the token address, a
 - On-chain transactions require a real MetaMask wallet and Sepolia ETH; the browser preview does not simulate them.
 - Accounts are wallet based; there are no passwords or email addresses. Registration signatures have a one-use five-minute challenge and site sessions expire after seven days.
 
-`contracts/RuleX.sol` contains an MIT SPDX identifier. Choose and add a repository-level `LICENSE` file when you decide how to license the full frontend and documentation.
+No open-source license is currently granted for this repository. The Solidity source files use the SPDX identifier `UNLICENSED`.
 
 
 ## Trust and safety
