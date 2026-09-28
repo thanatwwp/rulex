@@ -21,7 +21,8 @@ declare global {
 }
 
 const CHAIN_ID = 11155111n;
-const DEFAULT_ESCROW = "0xFad4B34f9341643Ea3804Ba991d1961165Cac335";
+const LEGACY_V1_ESCROW = "0xFad4B34f9341643Ea3804Ba991d1961165Cac335";
+const DEFAULT_ESCROW = "0xD979f8a7013aD57468Ffc8D5FDb5dA9ae8b7Dac9";
 const EXPLORER = "https://sepolia.etherscan.io";
 type DraftMilestone = { description: string; amount: string; deadline: string };
 type TxState = { label: string; hash: string; pending: boolean } | null;
@@ -229,7 +230,14 @@ export default function Home() {
 
   useEffect(() => {
     const saved = localStorage.getItem("rulex-escrow");
-    if (saved && isAddress(saved)) { setEscrowAddress(saved); setAddressInput(saved); }
+    if (saved && isAddress(saved) && getAddress(saved).toLowerCase() !== LEGACY_V1_ESCROW.toLowerCase()) {
+      setEscrowAddress(getAddress(saved));
+      setAddressInput(getAddress(saved));
+    } else {
+      localStorage.setItem("rulex-escrow", DEFAULT_ESCROW);
+      setEscrowAddress(DEFAULT_ESCROW);
+      setAddressInput(DEFAULT_ESCROW);
+    }
     if (!window.ethereum) return;
     const p = provider();
     void p.send("eth_accounts", []).then(async (accounts: string[]) => {
@@ -405,12 +413,12 @@ export default function Home() {
         <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
           <DialogTrigger asChild><button className="header-link" type="button">Contract <ChevronRight size={15} /></button></DialogTrigger>
           <DialogContent className="contract-dialog">
-            <DialogHeader><DialogTitle>Published Sepolia contract</DialogTitle><DialogDescription>RuleX uses one published escrow address for this prototype. Users cannot silently switch the production site to another contract.</DialogDescription></DialogHeader>
+            <DialogHeader><DialogTitle>Published Sepolia contract · V2</DialogTitle><DialogDescription>RuleX now uses the V2 escrow for new projects. It adds milestone deadlines, review timeouts, disputes, and protected final delivery. Existing V1 projects remain on the legacy contract.</DialogDescription></DialogHeader>
             <label className="form-label" htmlFor="contract-address">RuleXEscrow address</label>
             <input className="field monospace" id="contract-address" value={escrowAddress} readOnly spellCheck={false} />
             {tokenAddress && <div className="contract-info"><span>Payment token</span><code>{tokenAddress}</code></div>}
             <a className="button button-outline full-width" href={EXPLORER + "/address/" + escrowAddress} target="_blank" rel="noreferrer">View contract on Etherscan <ExternalLink size={15} /></a>
-            <a className="button button-quiet full-width" href="/trust"><ShieldCheck size={15} /> Read RuleX trust & safety</a>
+            <a className="button button-quiet full-width" href="/trust"><ShieldCheck size={15} /> Read RuleX trust & safety</a><a className="button button-quiet full-width" href={EXPLORER + "/address/" + LEGACY_V1_ESCROW} target="_blank" rel="noreferrer">View legacy V1 contract <ExternalLink size={15} /></a>
           </DialogContent>
         </Dialog>
         {account ? <button className="wallet-connected" type="button" onClick={!walletMatches ? () => void changeWallet() : onSepolia ? () => void refresh() : switchNetwork}><span className="wallet-status" />{onSepolia ? shortAddress(account) : "Switch to Sepolia"}{onSepolia && walletMatches ? <RefreshCw size={15} /> : <ArrowRight size={15} />}</button>
