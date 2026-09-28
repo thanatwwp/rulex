@@ -263,6 +263,7 @@ contract RuleXEscrowV2 {
         Milestone storage milestone = projectMilestones[projectId][index];
         require(!milestone.submitted, "Already submitted");
         require(!milestone.paid && !milestone.refunded, "Milestone resolved");
+        require(block.timestamp <= milestone.deadline, "Milestone deadline missed");
 
         milestone.submitted = true;
         milestone.proof = proof;
