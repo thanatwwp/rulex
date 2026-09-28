@@ -1451,3 +1451,20 @@ html.dark .allowance-notice {
 }
 html.dark .allowance-notice svg { color: #82d8d0; }
 html.dark .allowance-notice strong { color: #dce8eb; }
+
+
+.funding-explainer {
+  margin-top: 10px;
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  color: #607985;
+  font-size: .76rem;
+  line-height: 1.45;
+}
+.funding-explainer svg { flex: none; margin-top: 1px; color: #168177; }
+.funding-explainer strong { color: #274b5f; }
+
+html.dark .funding-explainer { color: #9bb0b7; }
+html.dark .funding-explainer svg { color: #82d8d0; }
+html.dark .funding-explainer strong { color: #dce8eb; }
