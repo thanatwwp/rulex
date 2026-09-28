@@ -107,13 +107,49 @@ export default function Home() {
 
   const loadProject = useCallback(async (id: number, wallet: string, contractAddress: string, token: string) => {
     const p = provider();
-    const escrow = new Contract(contractAddress, escrowAbi, p);
+    let version = 1;
+    try {
+      version = Number(await new Contract(contractAddress, ["function version() view returns (uint256)"], p).version());
+    } catch { version = 1; }
+    setContractVersion(version);
+
+    const abi = version >= 2 ? escrowV2Abi : escrowAbi;
+    const escrow = new Contract(contractAddress, abi, p);
+    if (version >= 2) {
+      try { setArbiter(await escrow.arbiter()); } catch { setArbiter(""); }
+    } else setArbiter("");
+
     const raw = await escrow.projects(id);
     if (Number(raw.id) !== id) throw new Error("Project #" + id + " does not exist on this escrow contract.");
     const project = projectFromRaw(raw, id);
     const length = Number(await escrow.getMilestoneCount(id));
     const values = await Promise.all(Array.from({ length }, (_, i) => escrow.getMilestone(id, i)));
-    const details: Milestone[] = values.map((v, i) => ({ index: i, description: v.description, amount: v.amount, submitted: v.submitted, submission: v.submission, approved: v.approved, paid: v.paid }));
+    const details: Milestone[] = version >= 2
+      ? values.map((v, i) => ({
+          index: i,
+          description: v.description,
+          amount: v.amount,
+          deadline: Number(v.deadline),
+          submitted: v.submitted,
+          submission: v.proof,
+          submittedAt: Number(v.submittedAt),
+          reviewDeadline: Number(v.reviewDeadline),
+          approved: v.approved,
+          disputed: v.disputed,
+          disputeReason: v.disputeReason,
+          paid: v.paid,
+          refunded: v.refunded,
+          finalDelivery: v.finalDelivery,
+        }))
+      : values.map((v, i) => ({
+          index: i,
+          description: v.description,
+          amount: v.amount,
+          submitted: v.submitted,
+          submission: v.submission,
+          approved: v.approved,
+          paid: v.paid,
+        }));
     setSelected(project); setSelectedMilestones(details); setProjectIdInput(String(id));
     if (token && wallet.toLowerCase() === project.client.toLowerCase()) {
       setAllowance(await new Contract(token, tokenAbi, p).allowance(wallet, contractAddress));
@@ -129,7 +165,15 @@ export default function Home() {
       setChainId(network.chainId);
       if (network.chainId !== CHAIN_ID) return;
       if (await p.getCode(contractAddress) === "0x") throw new Error("No escrow contract was found at this address on Sepolia.");
-      const escrow = new Contract(contractAddress, escrowAbi, p);
+      let version = 1;
+      try {
+        version = Number(await new Contract(contractAddress, ["function version() view returns (uint256)"], p).version());
+      } catch { version = 1; }
+      setContractVersion(version);
+      const escrow = new Contract(contractAddress, version >= 2 ? escrowV2Abi : escrowAbi, p);
+      if (version >= 2) {
+        try { setArbiter(await escrow.arbiter()); } catch { setArbiter(""); }
+      } else setArbiter("");
       const token: string = await escrow.paymentToken();
       const t = new Contract(token, tokenAbi, p);
       const [countRaw, tokenSymbol, d, tokenBalance, tokenOwnerAddress] = await Promise.all([escrow.projectCount(), t.symbol(), t.decimals(), t.balanceOf(wallet), t.owner()]);
@@ -217,7 +261,7 @@ export default function Home() {
         if (!value || typeof value.title !== "string" || typeof value.description !== "string" || typeof value.freelancer !== "string" || !Array.isArray(value.milestones) || value.milestones.length < 1 || value.milestones.length > 3 || value.milestones.some(m => !m || typeof m.description !== "string" || typeof m.amount !== "string" || !/^\d+(\.\d{1,18})?$/.test(m.amount) || Number(m.amount) <= 0)) throw new Error("Provide a title, brief, freelancer wallet, and one to three positive RUSD milestones.");
         if (!isAddress(value.freelancer)) throw new Error("Enter a valid freelancer address.");
         setTitle(value.title.slice(0, 100)); setDescription(value.description.slice(0, 1600)); setFreelancer(value.freelancer);
-        setDraft(value.milestones.map(m => ({ description: m.description.slice(0, 240), amount: m.amount })));
+        setDraft(value.milestones.map((m, i) => ({ description: m.description.slice(0, 240), amount: m.amount, deadline: draft[i]?.deadline || "" })));
         setDraftNote("Editable draft — review before signing."); setTab("create");
         return { staged: true, milestoneCount: value.milestones.length, onChain: false };
       },
@@ -235,7 +279,8 @@ export default function Home() {
     setBusy(label);
     try {
       const signer = await provider().getSigner();
-      const escrow = new Contract(escrowAddress, escrowAbi, signer);
+      const activeEscrowAbi = contractVersion >= 2 ? escrowV2Abi : escrowAbi;
+      const escrow = new Contract(escrowAddress, activeEscrowAbi, signer);
       const token = new Contract(tokenAddress, tokenAbi, signer);
       const tx = await action(escrow, token);
       setTxState({ label, hash: tx.hash, pending: true });
@@ -244,7 +289,7 @@ export default function Home() {
       if (!receipt || receipt.status === 0) throw new Error("Transaction failed on Sepolia.");
       let id = focusId;
       if (label === "Creating agreement") {
-        const parser = new Interface(escrowAbi);
+        const parser = new Interface(contractVersion >= 2 ? escrowV2Abi : escrowAbi);
         for (const log of receipt.logs) {
           try { const event = parser.parseLog(log); if (event?.name === "ProjectCreated") id = Number(event.args.projectId); }
           catch { /* token log */ }
@@ -267,7 +312,24 @@ export default function Home() {
       if (draft.length < 1 || draft.length > 3 || draft.some(m => !m.description.trim())) throw new Error("Add descriptions for one to three milestones.");
       const amounts = draft.map(m => parseUnits(m.amount.trim(), decimals));
       if (amounts.some(a => a <= 0n)) throw new Error("Each milestone amount must be greater than zero.");
-      await transact("Creating agreement", e => e.createProject(getAddress(freelancer), title.trim(), description.trim(), draft.map(m => m.description.trim()), amounts));
+
+      if (contractVersion >= 2) {
+        if (draft.some(m => !m.deadline)) throw new Error("Set a deadline for every milestone.");
+        const deadlines = draft.map(m => Math.floor(new Date(m.deadline).getTime() / 1000));
+        const now = Math.floor(Date.now() / 1000);
+        if (deadlines.some(d => !Number.isFinite(d) || d <= now)) throw new Error("Every milestone deadline must be in the future.");
+        if (deadlines.some((d, i) => i > 0 && d <= deadlines[i - 1])) throw new Error("Each milestone deadline must be later than the one before it.");
+        await transact("Creating agreement", e => e.createProject(
+          getAddress(freelancer),
+          title.trim(),
+          description.trim(),
+          draft.map(m => m.description.trim()),
+          amounts,
+          deadlines,
+        ));
+      } else {
+        await transact("Creating agreement", e => e.createProject(getAddress(freelancer), title.trim(), description.trim(), draft.map(m => m.description.trim()), amounts));
+      }
     } catch (error) { toast.error(cleanError(error)); }
   };
 
@@ -279,12 +341,12 @@ export default function Home() {
       if (response.ok) {
         const result = await response.json() as { title?: string; milestones?: DraftMilestone[] };
         if (result.milestones?.length && result.milestones.length <= 3) {
-          setDraft(result.milestones); if (!title && result.title) setTitle(result.title);
+          setDraft(result.milestones.map((m, i) => ({ description: m.description, amount: m.amount, deadline: draft[i]?.deadline || "" }))); if (!title && result.title) setTitle(result.title);
           setDraftNote("AI draft — review every detail before signing."); toast.success("AI draft created."); setGenerating(false); return;
         }
       }
     } catch { /* optional API fallback */ }
-    setDraft(starterDraft(description, total || 100));
+    setDraft(starterDraft(description, total || 100).map((m, i) => ({ ...m, deadline: draft[i]?.deadline || "" })));
     setDraftNote("Local starter draft — AI is not connected yet.");
     toast.info("An editable starter draft was created. AI is not connected yet.");
     setGenerating(false);
