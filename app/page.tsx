@@ -10,7 +10,7 @@ import { Toaster } from "@/components/ui/sonner";
 import JourneyAnimation from "@/components/journey-animation";
 import RulexAiAssistant from "@/components/rulex-ai-assistant";
 import ThemeToggle from "@/components/theme-toggle";
-import { cleanError, escrowAbi, money, shortAddress, starterDraft, statusName, tokenAbi, type Milestone, type Project } from "@/lib/rulex";
+import { cleanError, escrowAbi, escrowV2Abi, money, shortAddress, starterDraft, statusName, tokenAbi, type Milestone, type Project } from "@/lib/rulex";
 import { selectWallet, walletSelectionError } from "@/lib/wallet-selection";
 import type { Profile } from "@/lib/auth";
 
@@ -23,15 +23,20 @@ declare global {
 const CHAIN_ID = 11155111n;
 const DEFAULT_ESCROW = "0xFad4B34f9341643Ea3804Ba991d1961165Cac335";
 const EXPLORER = "https://sepolia.etherscan.io";
-type DraftMilestone = { description: string; amount: string };
+type DraftMilestone = { description: string; amount: string; deadline: string };
 type TxState = { label: string; hash: string; pending: boolean } | null;
-const STARTER: DraftMilestone[] = [{ description: "Design", amount: "30" }, { description: "Development", amount: "40" }, { description: "Final delivery", amount: "30" }];
+const STARTER: DraftMilestone[] = [{ description: "Design", amount: "30", deadline: "" }, { description: "Development", amount: "40", deadline: "" }, { description: "Final delivery", amount: "30", deadline: "" }];
 
 function projectFromRaw(raw: any, id: number): Project {
   return { id, client: raw.client, freelancer: raw.freelancer, title: raw.title, description: raw.projectDescription,
     totalAmount: raw.totalAmount, escrowBalance: raw.escrowBalance, currentMilestone: Number(raw.currentMilestone),
     status: Number(raw.status), clientCancellationApproved: raw.clientCancellationApproved,
     freelancerCancellationApproved: raw.freelancerCancellationApproved };
+}
+
+function utcDateTime(timestamp?: number) {
+  if (!timestamp) return "";
+  return new Date(timestamp * 1000).toISOString().slice(0, 16).replace("T", " ") + " UTC";
 }
 
 export default function Home() {
@@ -65,6 +70,10 @@ export default function Home() {
   const [draftNote, setDraftNote] = useState("");
   const [generating, setGenerating] = useState(false);
   const [submission, setSubmission] = useState("");
+  const [finalDelivery, setFinalDelivery] = useState("");
+  const [disputeReason, setDisputeReason] = useState("");
+  const [contractVersion, setContractVersion] = useState(1);
+  const [arbiter, setArbiter] = useState("");
   const [mintTo, setMintTo] = useState("");
   const [mintAmount, setMintAmount] = useState("150");
   const providerRef = useRef<BrowserProvider | null>(null);
@@ -75,6 +84,9 @@ export default function Home() {
   const worker = Boolean(selected && account && selected.freelancer.toLowerCase() === account.toLowerCase());
   const tokenOwner = Boolean(owner && account && owner.toLowerCase() === account.toLowerCase());
   const current = selectedMilestones[selected?.currentMilestone ?? -1];
+  const isV2 = contractVersion >= 2;
+  const isArbiter = Boolean(isV2 && arbiter && account && arbiter.toLowerCase() === account.toLowerCase());
+  const nowSeconds = Math.floor(Date.now() / 1000);
   const projectAllowance = selected ? (allowance < selected.totalAmount ? allowance : selected.totalAmount) : 0n;
   const total = useMemo(() => draft.reduce((n, m) => n + (Number(m.amount) || 0), 0), [draft]);
 
@@ -100,13 +112,49 @@ export default function Home() {
 
   const loadProject = useCallback(async (id: number, wallet: string, contractAddress: string, token: string) => {
     const p = provider();
-    const escrow = new Contract(contractAddress, escrowAbi, p);
+    let version = 1;
+    try {
+      version = Number(await new Contract(contractAddress, ["function version() view returns (uint256)"], p).version());
+    } catch { version = 1; }
+    setContractVersion(version);
+
+    const abi = version >= 2 ? escrowV2Abi : escrowAbi;
+    const escrow = new Contract(contractAddress, abi, p);
+    if (version >= 2) {
+      try { setArbiter(await escrow.arbiter()); } catch { setArbiter(""); }
+    } else setArbiter("");
+
     const raw = await escrow.projects(id);
     if (Number(raw.id) !== id) throw new Error("Project #" + id + " does not exist on this escrow contract.");
     const project = projectFromRaw(raw, id);
     const length = Number(await escrow.getMilestoneCount(id));
     const values = await Promise.all(Array.from({ length }, (_, i) => escrow.getMilestone(id, i)));
-    const details: Milestone[] = values.map((v, i) => ({ index: i, description: v.description, amount: v.amount, submitted: v.submitted, submission: v.submission, approved: v.approved, paid: v.paid }));
+    const details: Milestone[] = version >= 2
+      ? values.map((v, i) => ({
+          index: i,
+          description: v.description,
+          amount: v.amount,
+          deadline: Number(v.deadline),
+          submitted: v.submitted,
+          submission: v.proof,
+          submittedAt: Number(v.submittedAt),
+          reviewDeadline: Number(v.reviewDeadline),
+          approved: v.approved,
+          disputed: v.disputed,
+          disputeReason: v.disputeReason,
+          paid: v.paid,
+          refunded: v.refunded,
+          finalDelivery: v.finalDelivery,
+        }))
+      : values.map((v, i) => ({
+          index: i,
+          description: v.description,
+          amount: v.amount,
+          submitted: v.submitted,
+          submission: v.submission,
+          approved: v.approved,
+          paid: v.paid,
+        }));
     setSelected(project); setSelectedMilestones(details); setProjectIdInput(String(id));
     if (token && wallet.toLowerCase() === project.client.toLowerCase()) {
       setAllowance(await new Contract(token, tokenAbi, p).allowance(wallet, contractAddress));
@@ -122,7 +170,15 @@ export default function Home() {
       setChainId(network.chainId);
       if (network.chainId !== CHAIN_ID) return;
       if (await p.getCode(contractAddress) === "0x") throw new Error("No escrow contract was found at this address on Sepolia.");
-      const escrow = new Contract(contractAddress, escrowAbi, p);
+      let version = 1;
+      try {
+        version = Number(await new Contract(contractAddress, ["function version() view returns (uint256)"], p).version());
+      } catch { version = 1; }
+      setContractVersion(version);
+      const escrow = new Contract(contractAddress, version >= 2 ? escrowV2Abi : escrowAbi, p);
+      if (version >= 2) {
+        try { setArbiter(await escrow.arbiter()); } catch { setArbiter(""); }
+      } else setArbiter("");
       const token: string = await escrow.paymentToken();
       const t = new Contract(token, tokenAbi, p);
       const [countRaw, tokenSymbol, d, tokenBalance, tokenOwnerAddress] = await Promise.all([escrow.projectCount(), t.symbol(), t.decimals(), t.balanceOf(wallet), t.owner()]);
@@ -210,7 +266,7 @@ export default function Home() {
         if (!value || typeof value.title !== "string" || typeof value.description !== "string" || typeof value.freelancer !== "string" || !Array.isArray(value.milestones) || value.milestones.length < 1 || value.milestones.length > 3 || value.milestones.some(m => !m || typeof m.description !== "string" || typeof m.amount !== "string" || !/^\d+(\.\d{1,18})?$/.test(m.amount) || Number(m.amount) <= 0)) throw new Error("Provide a title, brief, freelancer wallet, and one to three positive RUSD milestones.");
         if (!isAddress(value.freelancer)) throw new Error("Enter a valid freelancer address.");
         setTitle(value.title.slice(0, 100)); setDescription(value.description.slice(0, 1600)); setFreelancer(value.freelancer);
-        setDraft(value.milestones.map(m => ({ description: m.description.slice(0, 240), amount: m.amount })));
+        setDraft(value.milestones.map((m, i) => ({ description: m.description.slice(0, 240), amount: m.amount, deadline: draft[i]?.deadline || "" })));
         setDraftNote("Editable draft — review before signing."); setTab("create");
         return { staged: true, milestoneCount: value.milestones.length, onChain: false };
       },
@@ -228,7 +284,8 @@ export default function Home() {
     setBusy(label);
     try {
       const signer = await provider().getSigner();
-      const escrow = new Contract(escrowAddress, escrowAbi, signer);
+      const activeEscrowAbi = contractVersion >= 2 ? escrowV2Abi : escrowAbi;
+      const escrow = new Contract(escrowAddress, activeEscrowAbi, signer);
       const token = new Contract(tokenAddress, tokenAbi, signer);
       const tx = await action(escrow, token);
       setTxState({ label, hash: tx.hash, pending: true });
@@ -237,7 +294,7 @@ export default function Home() {
       if (!receipt || receipt.status === 0) throw new Error("Transaction failed on Sepolia.");
       let id = focusId;
       if (label === "Creating agreement") {
-        const parser = new Interface(escrowAbi);
+        const parser = new Interface(contractVersion >= 2 ? escrowV2Abi : escrowAbi);
         for (const log of receipt.logs) {
           try { const event = parser.parseLog(log); if (event?.name === "ProjectCreated") id = Number(event.args.projectId); }
           catch { /* token log */ }
@@ -260,7 +317,24 @@ export default function Home() {
       if (draft.length < 1 || draft.length > 3 || draft.some(m => !m.description.trim())) throw new Error("Add descriptions for one to three milestones.");
       const amounts = draft.map(m => parseUnits(m.amount.trim(), decimals));
       if (amounts.some(a => a <= 0n)) throw new Error("Each milestone amount must be greater than zero.");
-      await transact("Creating agreement", e => e.createProject(getAddress(freelancer), title.trim(), description.trim(), draft.map(m => m.description.trim()), amounts));
+
+      if (contractVersion >= 2) {
+        if (draft.some(m => !m.deadline)) throw new Error("Set a deadline for every milestone.");
+        const deadlines = draft.map(m => Math.floor(new Date(m.deadline).getTime() / 1000));
+        const now = Math.floor(Date.now() / 1000);
+        if (deadlines.some(d => !Number.isFinite(d) || d <= now)) throw new Error("Every milestone deadline must be in the future.");
+        if (deadlines.some((d, i) => i > 0 && d <= deadlines[i - 1])) throw new Error("Each milestone deadline must be later than the one before it.");
+        await transact("Creating agreement", e => e.createProject(
+          getAddress(freelancer),
+          title.trim(),
+          description.trim(),
+          draft.map(m => m.description.trim()),
+          amounts,
+          deadlines,
+        ));
+      } else {
+        await transact("Creating agreement", e => e.createProject(getAddress(freelancer), title.trim(), description.trim(), draft.map(m => m.description.trim()), amounts));
+      }
     } catch (error) { toast.error(cleanError(error)); }
   };
 
@@ -272,12 +346,12 @@ export default function Home() {
       if (response.ok) {
         const result = await response.json() as { title?: string; milestones?: DraftMilestone[] };
         if (result.milestones?.length && result.milestones.length <= 3) {
-          setDraft(result.milestones); if (!title && result.title) setTitle(result.title);
+          setDraft(result.milestones.map((m, i) => ({ description: m.description, amount: m.amount, deadline: draft[i]?.deadline || "" }))); if (!title && result.title) setTitle(result.title);
           setDraftNote("AI draft — review every detail before signing."); toast.success("AI draft created."); setGenerating(false); return;
         }
       }
     } catch { /* optional API fallback */ }
-    setDraft(starterDraft(description, total || 100));
+    setDraft(starterDraft(description, total || 100).map((m, i) => ({ ...m, deadline: draft[i]?.deadline || "" })));
     setDraftNote("Local starter draft — AI is not connected yet.");
     toast.info("An editable starter draft was created. AI is not connected yet.");
     setGenerating(false);
@@ -366,10 +440,11 @@ export default function Home() {
             <div className="section-header"><div><h2>Create an agreement</h2><p>Set the work and payment before either person signs.</p></div><span className="step-marker">01 / 03</span></div>
             <div className="form-grid"><label className="form-group"><span className="form-label">Project title</span><input className="field" value={title} onChange={e => setTitle(e.target.value)} placeholder="e.g. Build a portfolio website" /></label><label className="form-group"><span className="form-label">Freelancer wallet address</span><input className="field monospace" value={freelancer} onChange={e => setFreelancer(e.target.value)} placeholder="0x…" spellCheck={false} /></label></div>
             <label className="form-group"><span className="form-label">What needs to be done?</span><textarea className="field text-area" rows={3} value={description} onChange={e => setDescription(e.target.value)} placeholder="Describe the deliverables and what success looks like…" /></label>
-            <div className="milestone-header"><div><h3>Milestones</h3><p>Up to three payments, released in order.</p></div><button className="draft-button" onClick={() => void generate()} disabled={generating}><Sparkles size={16} /> {generating ? "Drafting…" : "Generate draft"}</button></div>
+            <div className="milestone-header"><div><h3>Milestones</h3><p>Up to three payments, released in order.{isV2 ? " Set a deadline for each milestone." : ""}</p></div><button className="draft-button" onClick={() => void generate()} disabled={generating}><Sparkles size={16} /> {generating ? "Drafting…" : "Generate draft"}</button></div>
+            {!isV2 && <div className="v2-notice"><ShieldCheck size={17} /><span>The current escrow contract is RuleX V1. Deadline, dispute, review-timeout, and protected-delivery features become active after the V2 contract is deployed and connected.</span></div>}
             {draftNote && <p className="draft-origin"><Sparkles size={14} /> {draftNote}</p>}
-            <div className="milestone-editor">{draft.map((m, i) => <div className="milestone-edit-row" key={i}><span className="milestone-number">{String(i + 1).padStart(2, "0")}</span><label><span className="visually-hidden">Milestone {i + 1} description</span><input className="field" value={m.description} onChange={e => updateDraft(i, "description", e.target.value)} placeholder="Deliverable and acceptance criteria" /></label><label className="amount-field"><span className="visually-hidden">Milestone {i + 1} amount</span><input className="field" inputMode="decimal" value={m.amount} onChange={e => updateDraft(i, "amount", e.target.value)} placeholder="0" /><em>{symbol}</em></label><button className="remove-row" title="Remove milestone" aria-label={"Remove milestone " + (i + 1)} disabled={draft.length === 1} onClick={() => setDraft(items => items.filter((_, j) => j !== i))}><X size={17} /></button></div>)}</div>
-            {draft.length < 3 && <button className="add-milestone" onClick={() => setDraft(items => [...items, { description: "", amount: "" }])}><Plus size={16} /> Add milestone</button>}
+            <div className="milestone-editor">{draft.map((m, i) => <div className={"milestone-edit-row " + (isV2 ? "has-deadline" : "")} key={i}><span className="milestone-number">{String(i + 1).padStart(2, "0")}</span><label><span className="visually-hidden">Milestone {i + 1} description</span><input className="field" value={m.description} onChange={e => updateDraft(i, "description", e.target.value)} placeholder="Deliverable and acceptance criteria" /></label><label className="amount-field"><span className="visually-hidden">Milestone {i + 1} amount</span><input className="field" inputMode="decimal" value={m.amount} onChange={e => updateDraft(i, "amount", e.target.value)} placeholder="0" /><em>{symbol}</em></label>{isV2 && <label className="deadline-field"><span>Deadline</span><input className="field" type="datetime-local" value={m.deadline} onChange={e => updateDraft(i, "deadline", e.target.value)} /></label>}<button className="remove-row" title="Remove milestone" aria-label={"Remove milestone " + (i + 1)} disabled={draft.length === 1} onClick={() => setDraft(items => items.filter((_, j) => j !== i))}><X size={17} /></button></div>)}</div>
+            {draft.length < 3 && <button className="add-milestone" onClick={() => setDraft(items => [...items, { description: "", amount: "", deadline: "" }])}><Plus size={16} /> Add milestone</button>}
             <div className="form-total"><span>Total project budget</span><strong>{new Intl.NumberFormat("en-US", { maximumFractionDigits: 4 }).format(total)} <small>{symbol}</small></strong></div>
             <div className="form-footer"><p><ShieldCheck size={17} /> The freelancer accepts after creation. The client funds after acceptance.</p><button className="button button-primary" disabled={!ready || actionBusy} onClick={() => void create()}>{busy === "Creating agreement" ? <LoaderCircle size={17} className="spinning" /> : <FileCheck2 size={17} />} Create agreement</button></div>
           </TabsContent>
@@ -388,11 +463,28 @@ export default function Home() {
           <div className="party-list"><div><span>Client</span><code>{shortAddress(selected.client)}</code>{client && <em>You</em>}</div><div><span>Freelancer</span><code>{shortAddress(selected.freelancer)}</code>{worker && <em>You</em>}</div></div>
           <a className="contract-link" href={EXPLORER + "/address/" + escrowAddress} target="_blank" rel="noreferrer">View escrow contract <ArrowUpRight size={16} /></a>
         </div>
-        <div className="detail-card milestones-card"><div className="card-header"><h3>Milestones</h3><span>{selectedMilestones.length} steps</span></div><div className="timeline">{selectedMilestones.map(m => <div className={"timeline-row " + (m.paid ? "is-paid " : "") + (selected.currentMilestone === m.index && selected.status === 2 ? "is-current" : "")} key={m.index}><span className="timeline-node">{m.paid ? <Check size={14} /> : m.index + 1}</span><div><strong>{m.description}</strong><small>{m.paid ? "Paid" : m.submitted ? "Work submitted" : selected.currentMilestone === m.index ? "Current milestone" : "Upcoming"}</small>{m.submission && <p className="submission-note">{m.submission}</p>}</div><span className="timeline-amount">{money(m.amount, decimals)} {symbol}</span></div>)}</div></div>
-        <div className="detail-card action-card"><div className="card-header"><h3>Next action</h3><span>{client ? "Client" : worker ? "Freelancer" : "View only"}</span></div>
+        <div className="detail-card milestones-card"><div className="card-header"><h3>Milestones</h3><span>{selectedMilestones.length} steps</span></div><div className="timeline">{selectedMilestones.map(m => <div className={"timeline-row " + (m.paid ? "is-paid " : "") + (m.disputed ? "is-disputed " : "") + (selected.currentMilestone === m.index && selected.status === 2 ? "is-current" : "")} key={m.index}><span className="timeline-node">{m.paid ? <Check size={14} /> : m.index + 1}</span><div><strong>{m.description}</strong><small>{m.refunded ? "Refunded to client" : m.paid ? "Paid" : m.disputed ? "Disputed" : m.approved ? "Approved — awaiting final delivery" : m.submitted ? "Proof submitted" : selected.currentMilestone === m.index ? "Current milestone" : "Upcoming"}</small>{isV2 && m.deadline ? <p className="milestone-meta">Due {utcDateTime(m.deadline)}</p> : null}{isV2 && m.submitted && m.reviewDeadline && !m.approved && !m.disputed ? <p className="milestone-meta">Client review until {utcDateTime(m.reviewDeadline)}</p> : null}{m.submission && <p className="submission-note"><strong>{isV2 ? "Proof / preview:" : "Submission:"}</strong> {m.submission}</p>}{m.disputeReason && <p className="dispute-note"><strong>Dispute:</strong> {m.disputeReason}</p>}{m.finalDelivery && <p className="final-delivery-note"><strong>Final delivery:</strong> {m.finalDelivery}</p>}</div><span className="timeline-amount">{money(m.amount, decimals)} {symbol}</span></div>)}</div></div>
+        <div className="detail-card action-card"><div className="card-header"><h3>Next action</h3><span>{isArbiter ? "Arbiter" : client ? "Client" : worker ? "Freelancer" : "View only"}</span></div>
           {selected.status === 0 && (worker ? <><p>Review the agreement before accepting these terms.</p><button className="button button-primary full-width" disabled={actionBusy} onClick={() => void transact("Accepting agreement", e => e.acceptProject(selected.id), selected.id)}>Accept agreement <ArrowRight size={17} /></button></> : <p>Waiting for the freelancer to accept.</p>)}
           {selected.status === 1 && (client ? <><p>Lock this project&apos;s budget after giving RuleX permission to move the required test RUSD.</p><div className="funding-checks"><div className="approval-detail"><span>Approved for this project</span><strong>{money(projectAllowance, decimals)} / {money(selected.totalAmount, decimals)} {symbol}</strong></div><div className={"approval-detail " + (balance < selected.totalAmount ? "is-low" : "is-ready")}><span>Your RUSD balance</span><strong>{money(balance, decimals)} / {money(selected.totalAmount, decimals)} {symbol}</strong></div></div>{allowance > selected.totalAmount && <div className="allowance-notice"><ShieldCheck size={16} /><span>Your wallet still has a larger RuleX token allowance of <strong>{money(allowance, decimals)} {symbol}</strong> from an earlier approval. ERC-20 allowances are shared across projects. This project only needs {money(selected.totalAmount, decimals)} {symbol}.</span></div>}{balance < selected.totalAmount && <div className="balance-warning"><ShieldCheck size={16} /><span><strong>Not enough RUSD to fund this project.</strong> Sepolia ETH only pays gas. You need {money(selected.totalAmount - balance, decimals)} more {symbol} in this client wallet before funding.</span></div>}{allowance < selected.totalAmount ? <button className="button button-primary full-width" disabled={actionBusy} onClick={() => void transact("Approving RUSD", (_e, t) => t.approve(escrowAddress, selected.totalAmount), selected.id)}>Approve {money(selected.totalAmount, decimals)} {symbol} <ArrowRight size={17} /></button> : balance < selected.totalAmount ? <button className="button button-primary full-width" disabled>Fund project — insufficient RUSD <LockKeyhole size={17} /></button> : <button className="button button-primary full-width" disabled={actionBusy} onClick={() => void transact("Funding escrow", e => e.fundProject(selected.id), selected.id)}>Fund project <LockKeyhole size={17} /></button>}{balance < selected.totalAmount && <button className="button button-outline full-width allowance-reset" type="button" onClick={() => setTab("token")}>Open Demo token balance</button>}{allowance > selected.totalAmount && <button className="button button-outline full-width allowance-reset" disabled={actionBusy} onClick={() => void transact("Limiting RUSD approval", (_e, t) => t.approve(escrowAddress, selected.totalAmount), selected.id)}>Limit approval to {money(selected.totalAmount, decimals)} {symbol}</button>}</> : <p>Waiting for the client to fund the accepted agreement.</p>)}
-          {selected.status === 2 && (current ? worker ? current.submitted ? <p>Work submitted. Waiting for the client to review it.</p> : <><p>Submit the deliverable for <strong>{current.description}</strong>.</p><textarea className="field text-area" rows={3} aria-label="Milestone submission" value={submission} onChange={e => setSubmission(e.target.value)} placeholder="Paste a deliverable link or describe completed work…" /><button className="button button-primary full-width" disabled={actionBusy || !submission.trim()} onClick={() => void transact("Submitting milestone", e => e.submitMilestone(selected.id, submission.trim()), selected.id).then(ok => { if (ok) setSubmission(""); })}>Submit work <ArrowRight size={17} /></button></> : client ? current.submitted ? <><p>Review the submission before releasing <strong>{money(current.amount, decimals)} {symbol}</strong>.</p><div className="submitted-work">{current.submission}</div><button className="button button-primary full-width" disabled={actionBusy} onClick={() => void transact("Releasing payment", e => e.approveMilestone(selected.id), selected.id)}>Approve and release {money(current.amount, decimals)} {symbol} <ArrowRight size={17} /></button></> : <p>Waiting for the freelancer to submit <strong>{current.description}</strong>.</p> : <p>The client and freelancer can act on this milestone.</p> : <p>All milestones have been processed.</p>)}
+          {selected.status === 2 && (current ? isV2 ? (
+            isArbiter && current.disputed ? <><p>This milestone is disputed. As the configured RuleX demo arbiter, choose who should receive the milestone amount.</p><div className="submitted-work"><strong>Proof / preview:</strong> {current.submission}</div>{current.disputeReason && <div className="dispute-note"><strong>Client dispute:</strong> {current.disputeReason}</div>}<div className="resolution-actions"><button className="button button-primary full-width" disabled={actionBusy} onClick={() => void transact("Resolving dispute for freelancer", e => e.resolveDispute(selected.id, true), selected.id)}>Resolve for freelancer</button><button className="button button-outline full-width" disabled={actionBusy} onClick={() => void transact("Resolving dispute for client", e => e.resolveDispute(selected.id, false), selected.id)}>Refund milestone to client</button></div></>
+            : worker ? (
+              current.disputed ? <><p>The client disputed this milestone. Funds remain locked until the RuleX demo arbiter resolves it.</p>{current.disputeReason && <div className="dispute-note"><strong>Reason:</strong> {current.disputeReason}</div>}</>
+              : current.approved ? <><p>The milestone is approved. Reveal the protected final delivery and claim <strong>{money(current.amount, decimals)} {symbol}</strong> in the same transaction.</p><textarea className="field text-area" rows={3} aria-label="Final delivery" value={finalDelivery} onChange={e => setFinalDelivery(e.target.value)} placeholder="Paste the final delivery link, encrypted-file key, repository handoff, or final access instructions…" /><div className="protected-delivery-note"><LockKeyhole size={16} /><span>The client sees this final delivery only when this transaction releases your milestone payment.</span></div><button className="button button-primary full-width" disabled={actionBusy || !finalDelivery.trim()} onClick={() => void transact("Revealing final delivery and claiming payment", e => e.revealDeliveryAndClaim(selected.id, finalDelivery.trim()), selected.id).then(ok => { if (ok) setFinalDelivery(""); })}>Reveal final delivery & claim {money(current.amount, decimals)} {symbol} <ArrowRight size={17} /></button></>
+              : current.submitted ? (current.reviewDeadline && nowSeconds > current.reviewDeadline ? <><p>The 3-day client review period has ended without approval or dispute.</p><button className="button button-primary full-width" disabled={actionBusy} onClick={() => void transact("Claiming timeout approval", e => e.claimTimedOutMilestone(selected.id), selected.id)}>Claim timeout approval <ArrowRight size={17} /></button></> : <p>Proof submitted. The client can approve or dispute until <strong>{utcDateTime(current.reviewDeadline)}</strong>.</p>)
+              : current.deadline && nowSeconds > current.deadline ? <div className="balance-warning"><ShieldCheck size={16} /><span>This milestone deadline passed before proof was submitted. The client can now cancel the project and recover the remaining escrow.</span></div>
+              : <><p>Submit proof or a preview for <strong>{current.description}</strong>. Keep the protected final file/key private until payment.</p>{current.deadline ? <p className="milestone-deadline">Deadline: <strong>{utcDateTime(current.deadline)}</strong></p> : null}<textarea className="field text-area" rows={3} aria-label="Milestone proof" value={submission} onChange={e => setSubmission(e.target.value)} placeholder="Paste a preview link, screenshot link, test URL, commit hash, or completion evidence…" /><button className="button button-primary full-width" disabled={actionBusy || !submission.trim()} onClick={() => void transact("Submitting milestone proof", e => e.submitMilestone(selected.id, submission.trim()), selected.id).then(ok => { if (ok) setSubmission(""); })}>Submit proof for review <ArrowRight size={17} /></button></>
+            ) : client ? (
+              current.disputed ? <><p>You raised a dispute. The milestone payment remains locked while the RuleX demo arbiter reviews it.</p>{current.disputeReason && <div className="dispute-note"><strong>Your reason:</strong> {current.disputeReason}</div>}</>
+              : current.approved ? <p>You approved this milestone. The freelancer must now reveal the protected final delivery to claim <strong>{money(current.amount, decimals)} {symbol}</strong>.</p>
+              : current.submitted ? <><p>Review the freelancer&apos;s proof before the review window ends.</p><div className="submitted-work"><strong>Proof / preview:</strong> {current.submission}</div>{current.reviewDeadline ? <p className="milestone-deadline">Review deadline: <strong>{utcDateTime(current.reviewDeadline)}</strong></p> : null}<button className="button button-primary full-width" disabled={actionBusy} onClick={() => void transact("Approving milestone proof", e => e.approveMilestone(selected.id), selected.id)}>Approve proof <ArrowRight size={17} /></button><textarea className="field text-area dispute-input" rows={2} aria-label="Dispute reason" value={disputeReason} onChange={e => setDisputeReason(e.target.value)} placeholder="If the work does not meet the milestone, explain the specific problem…" /><button className="button button-outline full-width" disabled={actionBusy || !disputeReason.trim() || Boolean(current.reviewDeadline && nowSeconds > current.reviewDeadline)} onClick={() => void transact("Raising milestone dispute", e => e.raiseDispute(selected.id, disputeReason.trim()), selected.id).then(ok => { if (ok) setDisputeReason(""); })}>Raise dispute</button></>
+              : current.deadline && nowSeconds > current.deadline ? <><p>The freelancer missed the milestone deadline without submitting proof.</p><button className="button button-outline full-width" disabled={actionBusy} onClick={() => void transact("Cancelling for missed deadline", e => e.cancelForMissedDeadline(selected.id), selected.id)}>Cancel project & refund remaining escrow</button></>
+              : <p>Waiting for the freelancer to submit proof for <strong>{current.description}</strong>{current.deadline ? <> by <strong>{utcDateTime(current.deadline)}</strong></> : null}.</p>
+            ) : <p>This milestone is protected by RuleX V2 deadline, review, dispute, and final-delivery rules.</p>
+          ) : (
+            worker ? current.submitted ? <p>Work submitted. Waiting for the client to review it.</p> : <><p>Submit the deliverable for <strong>{current.description}</strong>.</p><textarea className="field text-area" rows={3} aria-label="Milestone submission" value={submission} onChange={e => setSubmission(e.target.value)} placeholder="Paste a deliverable link or describe completed work…" /><button className="button button-primary full-width" disabled={actionBusy || !submission.trim()} onClick={() => void transact("Submitting milestone", e => e.submitMilestone(selected.id, submission.trim()), selected.id).then(ok => { if (ok) setSubmission(""); })}>Submit work <ArrowRight size={17} /></button></> : client ? current.submitted ? <><p>Review the submission before releasing <strong>{money(current.amount, decimals)} {symbol}</strong>.</p><div className="submitted-work">{current.submission}</div><button className="button button-primary full-width" disabled={actionBusy} onClick={() => void transact("Releasing payment", e => e.approveMilestone(selected.id), selected.id)}>Approve and release {money(current.amount, decimals)} {symbol} <ArrowRight size={17} /></button></> : <p>Waiting for the freelancer to submit <strong>{current.description}</strong>.</p> : <p>The client and freelancer can act on this milestone.</p>
+          ) : <p>All milestones have been processed.</p>)}
           {selected.status === 3 && <div className="success-note"><CheckCircle2 size={21} /> All milestones are complete and paid.</div>}
           {selected.status === 4 && <p>Cancellation requested. {selected.clientCancellationApproved ? "Waiting for the freelancer." : "Waiting for the client."}</p>}
           {selected.status === 5 && <><div className="success-note"><CheckCircle2 size={21} /> Cancelled. Remaining escrow returned to the client.</div>{client && allowance > 0n && <><div className="allowance-notice"><ShieldCheck size={16} /><span>Your wallet still allows RuleX to spend up to <strong>{money(allowance, decimals)} {symbol}</strong>. ERC-20 approvals do not disappear when a project is cancelled.</span></div><button className="button button-outline full-width allowance-reset" disabled={actionBusy} onClick={() => void transact("Revoking RUSD approval", (_e, t) => t.approve(escrowAddress, 0), selected.id)}>Revoke unused RUSD approval</button></>}</>}

@@ -1515,3 +1515,119 @@ html.dark .balance-warning {
 }
 html.dark .balance-warning svg { color: #ff8798; }
 html.dark .balance-warning strong { color: #ffadba; }
+
+
+/* RuleX V2 milestone protection UI */
+.v2-notice,
+.protected-delivery-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  padding: 11px 12px;
+  margin: 10px 0 14px;
+  border: 1px solid #c9dce1;
+  border-radius: 10px;
+  background: #f5fafb;
+  color: #5f7782;
+  font-size: .78rem;
+  line-height: 1.45;
+}
+.v2-notice svg,
+.protected-delivery-note svg { flex: none; margin-top: 1px; color: #168177; }
+
+.milestone-edit-row.has-deadline {
+  grid-template-columns: auto minmax(0,1fr) minmax(105px,.24fr) minmax(190px,.42fr) auto;
+  align-items: end;
+}
+.deadline-field {
+  display: grid;
+  gap: 5px;
+}
+.deadline-field > span {
+  color: #607985;
+  font-size: .7rem;
+  font-weight: 750;
+}
+.deadline-field .field {
+  min-height: 42px;
+  font-size: .78rem;
+}
+.milestone-meta,
+.milestone-deadline {
+  margin: 4px 0 0;
+  color: #6c838e;
+  font-size: .72rem;
+  line-height: 1.4;
+}
+.submission-note strong,
+.dispute-note strong,
+.final-delivery-note strong { color: inherit; }
+.dispute-note,
+.final-delivery-note {
+  margin: 7px 0 0;
+  padding: 8px 9px;
+  border-radius: 8px;
+  font-size: .76rem;
+  line-height: 1.45;
+}
+.dispute-note {
+  color: #8a4a58;
+  background: #fff3f5;
+  border: 1px solid #e5c3ca;
+}
+.final-delivery-note {
+  color: #27635e;
+  background: #eff9f6;
+  border: 1px solid #c5e5df;
+  overflow-wrap: anywhere;
+}
+.timeline-row.is-disputed {
+  background: #fff8f9;
+}
+.resolution-actions {
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+}
+.dispute-input { margin-top: 11px; }
+
+html.dark .v2-notice,
+html.dark .protected-delivery-note {
+  background: #101a21;
+  border-color: #31424b;
+  color: #9bb0b7;
+}
+html.dark .v2-notice svg,
+html.dark .protected-delivery-note svg { color: #82d8d0; }
+html.dark .deadline-field > span,
+html.dark .milestone-meta,
+html.dark .milestone-deadline { color: #90a6ae; }
+html.dark .dispute-note {
+  color: #e6aab4;
+  background: #24171a;
+  border-color: #633943;
+}
+html.dark .final-delivery-note {
+  color: #a8ded7;
+  background: #142724;
+  border-color: #31534f;
+}
+html.dark .timeline-row.is-disputed { background: #1d1519 !important; }
+
+@media(max-width:900px) {
+  .milestone-edit-row.has-deadline {
+    grid-template-columns: auto minmax(0,1fr) minmax(100px,.3fr) auto;
+  }
+  .milestone-edit-row.has-deadline .deadline-field {
+    grid-column: 2 / 4;
+  }
+}
+@media(max-width:620px) {
+  .milestone-edit-row.has-deadline {
+    grid-template-columns: auto minmax(0,1fr) auto;
+  }
+  .milestone-edit-row.has-deadline .amount-field,
+  .milestone-edit-row.has-deadline .deadline-field {
+    grid-column: 2 / 3;
+  }
+}

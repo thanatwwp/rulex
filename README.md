@@ -66,3 +66,22 @@ The interface shows statuses, milestone progress, balances, the token address, a
 RuleX is an educational Ethereum Sepolia prototype. It uses test tokens only. The website never asks for a wallet seed phrase, private key, or wallet password. Wallet ownership is proven with a free signed message, and on-chain actions require separate confirmation in MetaMask.
 
 The production frontend uses the fixed Sepolia escrow address `0xFad4B34f9341643Ea3804Ba991d1961165Cac335`. Users can inspect the source in this repository and the deployed bytecode on Sepolia Etherscan. The prototype is not audited and should not be used with real-value assets.
+
+
+## RuleX Escrow V2 protections
+
+`contracts/RuleXEscrowV2.sol` adds freelancer/client protection features for the next Sepolia deployment:
+
+- The client sets a deadline for every milestone when the agreement is created.
+- The client can adjust deadlines only before project funding.
+- The freelancer submits proof/preview before the milestone deadline instead of exposing the protected final deliverable immediately.
+- Submission starts a 3-day client review period.
+- The client can approve the proof or raise a dispute during that review period.
+- If the client does nothing, the freelancer can call `claimTimedOutMilestone` after the review period. Ethereum contracts cannot wake themselves up automatically, so this requires a transaction.
+- After approval or timeout approval, the freelancer uses `revealDeliveryAndClaim` to reveal the final handoff and receive the milestone payment in the same transaction.
+- If the freelancer misses the milestone deadline without submitting proof, the client can cancel the project and recover the remaining escrow.
+- Disputed milestones remain locked until the configured demo arbiter resolves them for the freelancer or client.
+
+For protected delivery in this prototype, the freelancer should submit only a preview/proof first. The final handoff can be an encrypted file link plus key, private repository handoff instructions, or another final-access string revealed only in the payment-claim transaction. Anything written on-chain becomes public after reveal.
+
+V2 is a new smart contract and cannot modify already deployed V1 projects. Existing V1 projects continue to follow the original rules. Deploy `RuleXEscrowV2` on Sepolia with the existing MockRUSD token address, then update the frontend escrow address to enable these protections for newly created projects.

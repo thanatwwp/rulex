@@ -12,13 +12,49 @@ export const escrowAbi = [
   "function requestCancellation(uint256)",
   "event ProjectCreated(uint256 indexed projectId,address indexed client,address indexed freelancer,uint256 totalAmount)",
 ];
+
+export const escrowV2Abi = [
+  "function version() pure returns (uint256)",
+  "function paymentToken() view returns (address)",
+  "function arbiter() view returns (address)",
+  "function projectCount() view returns (uint256)",
+  "function projects(uint256) view returns (uint256 id,address client,address freelancer,string title,string projectDescription,uint256 totalAmount,uint256 escrowBalance,uint256 currentMilestone,uint8 status,bool clientCancellationApproved,bool freelancerCancellationApproved)",
+  "function getMilestoneCount(uint256) view returns (uint256)",
+  "function getMilestone(uint256,uint256) view returns (string description,uint256 amount,uint256 deadline,bool submitted,string proof,uint256 submittedAt,uint256 reviewDeadline,bool approved,bool disputed,string disputeReason,bool paid,bool refunded,string finalDelivery)",
+  "function createProject(address,string,string,string[],uint256[],uint256[]) returns (uint256)",
+  "function updateMilestoneDeadline(uint256,uint256,uint256)",
+  "function acceptProject(uint256)", "function fundProject(uint256)",
+  "function submitMilestone(uint256,string)", "function approveMilestone(uint256)",
+  "function claimTimedOutMilestone(uint256)",
+  "function raiseDispute(uint256,string)",
+  "function resolveDispute(uint256,bool)",
+  "function revealDeliveryAndClaim(uint256,string)",
+  "function cancelForMissedDeadline(uint256)",
+  "function requestCancellation(uint256)",
+  "event ProjectCreated(uint256 indexed projectId,address indexed client,address indexed freelancer,uint256 totalAmount)",
+];
 export const tokenAbi = [
   "function symbol() view returns (string)", "function decimals() view returns (uint8)",
   "function balanceOf(address) view returns (uint256)", "function allowance(address,address) view returns (uint256)",
   "function owner() view returns (address)", "function approve(address,uint256) returns (bool)",
   "function mint(address,uint256)",
 ];
-export type Milestone = { index: number; description: string; amount: bigint; submitted: boolean; submission: string; approved: boolean; paid: boolean };
+export type Milestone = {
+  index: number;
+  description: string;
+  amount: bigint;
+  deadline?: number;
+  submitted: boolean;
+  submission: string;
+  submittedAt?: number;
+  reviewDeadline?: number;
+  approved: boolean;
+  disputed?: boolean;
+  disputeReason?: string;
+  paid: boolean;
+  refunded?: boolean;
+  finalDelivery?: string;
+};
 export type Project = { id: number; client: string; freelancer: string; title: string; description: string; totalAmount: bigint; escrowBalance: bigint; currentMilestone: number; status: number; clientCancellationApproved: boolean; freelancerCancellationApproved: boolean };
 export const statusName = ["Created", "Accepted", "Funded", "Completed", "Cancel pending", "Cancelled"];
 export const shortAddress = (a: string) => a ? `${a.slice(0, 6)}…${a.slice(-4)}` : "";
