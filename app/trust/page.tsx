@@ -1,7 +1,8 @@
 import { ExternalLink, LockKeyhole, ShieldCheck, WalletCards } from "lucide-react";
 import ThemeToggle from "@/components/theme-toggle";
 
-const ESCROW = "0xFad4B34f9341643Ea3804Ba991d1961165Cac335";
+const ESCROW = "0xD979f8a7013aD57468Ffc8D5FDb5dA9ae8b7Dac9";
+const LEGACY_ESCROW = "0xFad4B34f9341643Ea3804Ba991d1961165Cac335";
 const ETHERSCAN = "https://sepolia.etherscan.io/address/" + ESCROW;
 
 export const metadata = {
@@ -33,10 +34,10 @@ export default function TrustPage() {
           <h2>Published technical information</h2>
           <div className="trust-fact"><span>Network</span><strong>Ethereum Sepolia (chain ID 11155111)</strong></div>
           <div className="trust-fact"><span>Escrow contract</span><code>{ESCROW}</code></div>
-          <div className="trust-fact"><span>Status</span><strong>Educational prototype · Not audited</strong></div>
+          <div className="trust-fact"><span>Contract version</span><strong>RuleXEscrowV2</strong></div><div className="trust-fact"><span>Legacy V1</span><code>{LEGACY_ESCROW}</code></div><div className="trust-fact"><span>Status</span><strong>Educational prototype · Not audited</strong></div>
           <div className="trust-actions">
             <a className="button button-outline" href={ETHERSCAN} target="_blank" rel="noreferrer">View contract on Etherscan <ExternalLink size={15}/></a>
-            <a className="button button-outline" href="https://github.com/thanatwwp/rulex" target="_blank" rel="noreferrer">Review source on GitHub <ExternalLink size={15}/></a>
+            <a className="button button-outline" href="https://github.com/thanatwwp/rulex" target="_blank" rel="noreferrer">Review source on GitHub <ExternalLink size={15}/></a><a className="button button-outline" href={"https://sepolia.etherscan.io/address/" + LEGACY_ESCROW} target="_blank" rel="noreferrer">View legacy V1 <ExternalLink size={15}/></a>
           </div>
         </section>
 
