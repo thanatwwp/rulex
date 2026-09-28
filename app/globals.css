@@ -1425,3 +1425,29 @@ html.light .journey-step.is-active {
   html.light .public-content { padding-left: 14px !important; padding-right: 14px !important; }
   html.dark .public-intro h1 { font-size: clamp(2.55rem,11vw,3.65rem) !important; }
 }
+
+
+.allowance-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  margin: 10px 0 12px;
+  padding: 11px 12px;
+  border: 1px solid #cbdde1;
+  border-radius: 10px;
+  background: #f6fafb;
+  color: #5d7480;
+  font-size: .78rem;
+  line-height: 1.45;
+}
+.allowance-notice svg { flex: none; margin-top: 1px; color: #168177; }
+.allowance-notice strong { color: #274b5f; }
+.allowance-reset { margin-top: 8px; }
+
+html.dark .allowance-notice {
+  background: #101a21;
+  border-color: #31424b;
+  color: #9bb0b7;
+}
+html.dark .allowance-notice svg { color: #82d8d0; }
+html.dark .allowance-notice strong { color: #dce8eb; }
