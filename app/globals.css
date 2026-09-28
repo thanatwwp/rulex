@@ -1468,3 +1468,50 @@ html.dark .allowance-notice strong { color: #dce8eb; }
 html.dark .funding-explainer { color: #9bb0b7; }
 html.dark .funding-explainer svg { color: #82d8d0; }
 html.dark .funding-explainer strong { color: #dce8eb; }
+
+
+.funding-checks {
+  display: grid;
+  gap: 8px;
+}
+.approval-detail.is-low {
+  border-color: #e0b9bd !important;
+  background: #fff5f6 !important;
+}
+.approval-detail.is-low strong { color: #9e3241 !important; }
+.approval-detail.is-ready {
+  border-color: #b9ddd5 !important;
+  background: #f1f9f7 !important;
+}
+.balance-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  margin: 10px 0 12px;
+  padding: 11px 12px;
+  border: 1px solid #e0b9bd;
+  border-radius: 10px;
+  background: #fff5f6;
+  color: #7b4c55;
+  font-size: .78rem;
+  line-height: 1.45;
+}
+.balance-warning svg { flex: none; margin-top: 1px; color: #bd4c5d; }
+.balance-warning strong { color: #943444; }
+
+html.dark .approval-detail.is-low {
+  border-color: #633943 !important;
+  background: #24171a !important;
+}
+html.dark .approval-detail.is-low strong { color: #ff9aaa !important; }
+html.dark .approval-detail.is-ready {
+  border-color: #31534f !important;
+  background: #162a29 !important;
+}
+html.dark .balance-warning {
+  border-color: #633943;
+  background: #24171a;
+  color: #d6a6ad;
+}
+html.dark .balance-warning svg { color: #ff8798; }
+html.dark .balance-warning strong { color: #ffadba; }
