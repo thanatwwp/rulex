@@ -1,4 +1,4 @@
-import { limited, readJsonLimited } from "@/lib/security";
+import { limited, readJsonLimited, RequestBodyError } from "@/lib/security";
 import { getSessionProfile, jsonError, sameOrigin } from "@/lib/auth";
 import { callOpenAI, outputText, RulexAiUpstreamError } from "@/lib/openai";
 
@@ -56,6 +56,7 @@ export async function POST(request: Request) {
 
     return Response.json({ answer: answer.slice(0, 2400), tone });
   } catch (error) {
+    if (error instanceof RequestBodyError) return jsonError(error.message, error.status);
     if (error instanceof RulexAiUpstreamError) {
       return Response.json({ error: error.message }, { status: error.status });
     }
