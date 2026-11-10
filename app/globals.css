@@ -1826,3 +1826,114 @@ html.dark .auth-wallet-notice { background: #132d2c; border-color: #32635e; colo
   .milestone-edit-row:not(.has-deadline) .field { min-height: 46px; font-size: 16px; }
   .milestone-edit-row:not(.has-deadline) .amount-field em { top: auto; bottom: 13px; }
 }
+
+/* Tablet-first refinements for iPad portrait and landscape (768–1366 CSS px).
+   Keep desktop and phone layouts intact while avoiding narrow split panes. */
+.tablet-back-link { display: none; }
+@media (min-width: 651px) and (max-width: 1240px) {
+  .header-inner { min-height: 72px; padding-inline: clamp(18px, 3vw, 34px); }
+  .app-container { max-width: 1040px; padding: 30px clamp(20px, 3vw, 36px) 90px; }
+  .page-heading { align-items: flex-start; gap: 18px; }
+  .workspace-grid { grid-template-columns: minmax(0, 1fr); gap: 20px; }
+  .detail-column { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: stretch; }
+  .detail-column > .milestones-card { grid-column: auto; }
+  .detail-column > .action-card, .detail-column > .no-selection { grid-column: 1 / -1; }
+  .detail-card { padding: clamp(19px, 2.8vw, 27px); }
+  .primary-column { min-width: 0; }
+  .workspace-header { padding: 15px clamp(18px, 2.8vw, 28px); }
+  .tab-body { padding: clamp(22px, 3vw, 30px); }
+  .project-row { min-height: 75px; padding-inline: 18px; }
+  .tablet-back-link {
+    display: inline-flex; align-items: center; justify-content: flex-start;
+    width: fit-content; min-height: 44px; padding: 7px 2px; margin-bottom: -2px;
+    color: #147b73; font-size: .87rem; font-weight: 750; border: 0; background: none;
+  }
+  html.dark .tablet-back-link { color: #95ded8; }
+  .tablet-back-link:hover { text-decoration: underline; }
+  .detail-column { scroll-margin-top: 24px; }
+  .form-grid { grid-template-columns: minmax(0,1fr) minmax(0,1fr); }
+  .form-grid > *, .milestone-editor > * { min-width: 0; }
+  .milestone-edit-row.has-deadline {
+    grid-template-columns: 28px minmax(0, 1fr) minmax(105px, .28fr) minmax(178px, .42fr) 44px;
+    align-items: end; column-gap: 10px;
+  }
+  .milestone-edit-row.has-deadline .deadline-field { grid-column: auto; }
+  .milestone-edit-row.has-deadline .remove-row,
+  .remove-row, .icon-button { min-height: 44px; min-width: 44px; }
+  .button, .draft-button, .add-milestone, .header-link, .wallet-connected { min-height: 44px; }
+  .lookup-controls .field { width: min(180px, 28vw); }
+  .rulex-ai-panel { max-height: min(740px, calc(100dvh - 135px)); }
+  .rulex-ai-launcher { bottom: max(18px, env(safe-area-inset-bottom)); }
+  .trust-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .trust-grid article:last-child { grid-column: 1 / -1; }
+  .auth-layout { max-width: 1040px; grid-template-columns: minmax(0,.95fr) minmax(0,1fr); gap: clamp(24px,4vw,50px); padding-inline: clamp(20px,3vw,34px); }
+  .auth-intro h1 { font-size: clamp(2.45rem, 4.8vw, 4.2rem); }
+  .auth-panel { padding: clamp(22px,3vw,33px); }
+  .auth-topbar, .auth-footer { padding-inline: clamp(20px,3vw,34px); }
+  .role-card { min-height: 142px; }
+}
+@media (min-width: 901px) and (max-width: 1240px) {
+  /* Tablet landscape: make wallet controls a predictable dropdown. */
+  .mobile-menu {
+    display: inline-flex !important; color: var(--foreground) !important;
+    flex: none; width: 44px; height: 44px; margin-left: 0;
+  }
+  html.dark .mobile-menu { color: #dbecef !important; }
+  .header-actions {
+    display: none !important; position: absolute; z-index: 70;
+    top: calc(100% - 1px); left: auto; right: clamp(18px,3vw,34px);
+    width: min(370px,calc(100vw - 36px)); padding: 16px;
+    flex-direction: column; align-items: stretch; gap: 8px;
+    border: 1px solid var(--border) !important; border-radius: 0 0 16px 16px;
+    background: var(--card) !important; box-shadow: 0 25px 45px #08202b33;
+  }
+  .header-actions.is-open { display: flex !important; }
+  .header-actions .profile-badge {
+    display: grid !important; order: -1; width: 100%; margin: 0; padding: 5px 4px 12px;
+    border: 0; border-bottom: 1px solid var(--border);
+  }
+  .header-actions .header-link, .header-actions .wallet-connected, .header-actions .button {
+    width: 100%; min-height: 46px; justify-content: center;
+  }
+  .header-actions .logout-button { border-top: 1px solid var(--border); padding-top: 13px; }
+  html.dark .header-actions { background: #13232d !important; box-shadow: 0 24px 44px #0009 !important; }
+}
+/* Portrait iPads: roomy single-column content and full-width forms. */
+@media (min-width: 651px) and (max-width: 850px) {
+  .header-inner { gap: 12px; }
+  .page-heading { flex-direction: column; }
+  .heading-actions { width: 100%; padding: 0; }
+  .heading-actions .button { min-height: 46px; }
+  .workspace-grid { grid-template-columns: minmax(0,1fr); }
+  .detail-column { grid-template-columns: 1fr; }
+  .detail-column > * { grid-column: 1 / -1; }
+  .form-grid { grid-template-columns: minmax(0,1fr); gap: 0; }
+  .milestone-edit-row.has-deadline {
+    display: grid;
+    grid-template-columns: 28px minmax(0,1fr) minmax(135px,.46fr) 44px;
+    gap: 10px; padding: 14px;
+    border: 1px solid var(--border); border-radius: 12px;
+  }
+  .milestone-edit-row.has-deadline .milestone-description-field { grid-column: 2 / 4; grid-row: 1; }
+  .milestone-edit-row.has-deadline .amount-field { grid-column: 2; grid-row: 2; }
+  .milestone-edit-row.has-deadline .deadline-field { grid-column: 3 / 5; grid-row: 2; }
+  .milestone-edit-row.has-deadline .remove-row { grid-column: 4; grid-row: 1; }
+  .auth-layout { display: flex; flex-direction: column; max-width: 650px; padding-top: 30px; gap: 30px; }
+  .auth-intro { width: 100%; }
+  .auth-sequence { display: none; }
+  .auth-panel { width: 100%; }
+  .trust-grid { grid-template-columns: 1fr; }
+  .trust-grid article:last-child { grid-column: auto; }
+  .rulex-ai-launcher { right: 20px; }
+}
+/* Landscape-mode tablet with shallow height: maximize working space. */
+@media (min-width: 651px) and (max-width: 1240px) and (max-height: 720px) {
+  .app-container { padding-top: 20px; }
+  .page-heading { margin-bottom: 18px; }
+  .rulex-ai-panel {
+    bottom: 85px; max-height: calc(100dvh - 100px);
+  }
+  .rulex-ai-character-stage { min-height: 94px; }
+  .rulex-ai-character-stage > .rulex-mascot { width: 96px; height: 96px; }
+  .auth-layout { padding-top: 22px; padding-bottom: 32px; }
+}
