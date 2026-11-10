@@ -82,6 +82,6 @@ The production frontend uses RuleXEscrowV2 at `0xD979f8a7013aD57468Ffc8D5FDb5dA9
 - If the freelancer misses the milestone deadline without submitting proof, the client can cancel the project and recover the remaining escrow.
 - Disputed milestones remain locked until the configured demo arbiter resolves them for the freelancer or client.
 
-For protected delivery in this prototype, the freelancer should submit only a preview/proof first. The final handoff can be an encrypted file link plus key, private repository handoff instructions, or another final-access string revealed only in the payment-claim transaction. Anything written on-chain becomes public after reveal.
+For protected delivery in this prototype, the freelancer should submit only a preview/proof first. Only a non-secret final-delivery receipt or public reference should be put in the transaction. Ethereum transaction calldata is public and may be visible in the mempool before confirmation; do not send encryption keys, passwords, private links, wallet keys, or access tokens on-chain. Deliver confidential files and access credentials separately through a secure off-chain channel. Atomic payment does not keep the delivery text confidential.
 
 V2 is a new smart contract and cannot modify already deployed V1 projects. Existing V1 projects continue to follow the original rules. The deployed Sepolia V2 address used by the production frontend is `0xD979f8a7013aD57468Ffc8D5FDb5dA9ae8b7Dac9`, with the existing MockRUSD token address `0x73DB6FBC1f88F98156e225A1a0947065567bF178`.
