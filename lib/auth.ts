@@ -1,3 +1,4 @@
+import { RequestBodyError } from "@/lib/security";
 import { getAddress, isAddress, verifyMessage } from "ethers";
 
 const COOKIE = "rulex_sid";
@@ -55,6 +56,7 @@ export function jsonError(message: string, status: number) {
   return Response.json({ error: message }, { status, headers: { "Cache-Control": "no-store" } });
 }
 export function authError(error: unknown) {
+  if (error instanceof RequestBodyError) return jsonError(error.message, error.status);
   if (error instanceof Error && /challenge|signature|wallet|name|role|configured/i.test(error.message)) return jsonError(error.message, 400);
   return jsonError("Account service is temporarily unavailable. Please try again.", 503);
 }
