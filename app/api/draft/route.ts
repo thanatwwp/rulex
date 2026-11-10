@@ -1,14 +1,17 @@
+import { limited, readJsonLimited, RequestBodyError } from "@/lib/security";
 import { getSessionProfile, jsonError, sameOrigin } from "@/lib/auth";
 import { callOpenAI, outputText, RulexAiUpstreamError } from "@/lib/openai";
 
 export async function POST(request: Request) {
+  const throttle = limited(request, "ai-draft", 10, 60);
+  if (throttle) return throttle;
   if (!sameOrigin(request)) return jsonError("Invalid request origin.", 403);
   if (!await getSessionProfile(request)) return jsonError("Sign in to request milestone suggestions.", 401);
   const key = process.env.OPENAI_API_KEY?.trim();
   if (!key) return Response.json({ error: "AI service is not configured." }, { status: 503 });
 
   try {
-    const { description, budget } = await request.json() as { description?: unknown; budget?: unknown };
+    const { description, budget } = await readJsonLimited(request, 5000) as { description?: unknown; budget?: unknown };
     if (typeof description !== "string" || !description.trim() || description.length > 1600 || typeof budget !== "number" || !Number.isFinite(budget) || budget <= 0 || budget > 1_000_000) {
       return Response.json({ error: "Enter a short project brief and a valid budget." }, { status: 400 });
     }
@@ -46,6 +49,7 @@ export async function POST(request: Request) {
       milestones: parsed.milestones.map(m => ({ description: m.description.slice(0, 240), amount: m.amount })),
     });
   } catch (error) {
+    if (error instanceof RequestBodyError) return jsonError(error.message, error.status);
     if (error instanceof RulexAiUpstreamError) {
       return Response.json({ error: error.message }, { status: error.status });
     }

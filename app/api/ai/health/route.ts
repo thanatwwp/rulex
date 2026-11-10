@@ -1,6 +1,8 @@
 import { RULEX_AI_MODEL } from "@/lib/openai";
+import { getSessionProfile, jsonError } from "@/lib/auth";
 
-export async function GET() {
+export async function GET(request: Request) {
+  if (!await getSessionProfile(request)) return jsonError("Not authorized.", 401);
   const key = process.env.OPENAI_API_KEY?.trim();
   if (!key) {
     return Response.json(

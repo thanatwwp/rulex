@@ -1937,3 +1937,17 @@ html.dark .auth-wallet-notice { background: #132d2c; border-color: #32635e; colo
   .rulex-ai-character-stage > .rulex-mascot { width: 96px; height: 96px; }
   .auth-layout { padding-top: 22px; padding-bottom: 32px; }
 }
+
+/* Safety-critical notice: on-chain delivery text must never include secrets. */
+.protected-delivery-note {
+  background: #fff8e8 !important;
+  border-color: #e8ca8a !important;
+  color: #725320 !important;
+}
+.protected-delivery-note svg { color: #a66e16 !important; }
+html.dark .protected-delivery-note {
+  background: #292113 !important;
+  border-color: #72552a !important;
+  color: #f1d49a !important;
+}
+html.dark .protected-delivery-note svg { color: #ffd07c !important; }
