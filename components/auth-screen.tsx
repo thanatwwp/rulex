@@ -15,6 +15,7 @@ export default function AuthScreen({ mode }: { mode: "register" | "login" }) {
   const [busy, setBusy] = useState(false);
   const [selectingWallet, setSelectingWallet] = useState(false);
   const [error, setError] = useState("");
+  const [walletNotice, setWalletNotice] = useState("");
   const signup = mode === "register";
 
   useEffect(() => {
@@ -77,11 +78,11 @@ export default function AuthScreen({ mode }: { mode: "register" | "login" }) {
     catch (cause) { setError(cleanError(cause)); }
   }
   async function changeWallet() {
-    setError(""); setSelectingWallet(true);
+    setError(""); setWalletNotice(""); setSelectingWallet(true);
     try {
       if (!window.ethereum) throw new Error("Open RuleX in a browser with MetaMask installed.");
       const selected = await selectWallet(window.ethereum);
-      if (selected.toLowerCase() === wallet.toLowerCase()) setError("MetaMask kept the same account. Choose another one in MetaMask and try again.");
+      if (selected.toLowerCase() === wallet.toLowerCase()) setWalletNotice("You're already using this wallet. To switch, select a different account in MetaMask.");
       setWallet(selected);
     } catch (cause) { setError(walletSelectionError(cause)); }
     finally { setSelectingWallet(false); }
@@ -99,6 +100,7 @@ export default function AuthScreen({ mode }: { mode: "register" | "login" }) {
         {signup && <><label className="form-group"><span className="form-label">Display name</span><input className="field" value={name} onChange={e => setName(e.target.value)} maxLength={60} autoComplete="nickname" placeholder="How should people call you?" /></label>
           <fieldset className="role-fieldset"><legend className="form-label">I’m joining as a</legend><div className="role-options"><label className={"role-card " + (role === "client" ? "is-selected" : "")}><input type="radio" name="role" value="client" checked={role === "client"} onChange={() => setRole("client")} /><BriefcaseBusiness size={22} /><strong>Client</strong><span>Create projects and approve work.</span><Check size={16} className="role-check" /></label><label className={"role-card " + (role === "freelancer" ? "is-selected" : "")}><input type="radio" name="role" value="freelancer" checked={role === "freelancer"} onChange={() => setRole("freelancer")} /><Orbit size={22} /><strong>Freelancer</strong><span>Accept projects and submit work.</span><Check size={16} className="role-check" /></label></div></fieldset></>}
         <div className="auth-wallet"><div><Wallet size={19} /><span>{wallet ? shortAddress(wallet) : "No wallet connected"}</span></div><button type="button" disabled={busy || selectingWallet} onClick={() => void (wallet ? changeWallet() : connectOnly())}>{selectingWallet ? "Opening MetaMask…" : wallet ? "Change wallet" : "Connect wallet"}</button></div>
+        {walletNotice && <div role="status" className="auth-wallet-notice">{walletNotice}</div>}
         {error && <div role="alert" className="auth-error">{error}</div>}
         <button className="button button-primary auth-submit" type="button" onClick={() => void submit()} disabled={busy}>{busy ? "Waiting for MetaMask…" : signup ? "Create account & sign" : "Sign in & sign"} {signup ? <ArrowRight size={18} /> : <LogIn size={18} />}</button>
         <p className="auth-explain"><LockKeyhole size={16} /> Signing this login message is free and does not transfer tokens or grant token approval. Contract actions require a separate MetaMask confirmation.</p><a className="auth-trust-link" href="/trust"><ShieldCheck size={15} /> Read how RuleX protects wallet users</a>
