@@ -1814,3 +1814,15 @@ html.dark .milestone-field-label { color: #aac1c7; }
   .auth-topbar .topbar-utilities, .public-topbar .topbar-utilities { gap: 5px; }
   .auth-topbar .theme-toggle, .public-topbar .theme-toggle { min-height: 40px; min-width: 40px; }
 }
+
+.auth-wallet-notice { margin-top: 13px; padding: 12px 13px; border-radius: 10px; background: #e8f6f3; border: 1px solid #baded8; color: #246b65; font-size: .83rem; line-height: 1.5; }
+html.dark .auth-wallet-notice { background: #132d2c; border-color: #32635e; color: #a8e1d9; }
+@media (max-width: 650px) {
+  .milestone-edit-row:not(.has-deadline) { grid-template-columns: 24px minmax(0,1fr) 44px; gap: 9px; padding: 12px; border: 1px solid var(--border); border-radius: 12px; }
+  .milestone-edit-row:not(.has-deadline) .milestone-number { align-self: center; }
+  .milestone-edit-row:not(.has-deadline) .milestone-description-field { grid-column: 2; grid-row: 1; display: grid; gap: 5px; }
+  .milestone-edit-row:not(.has-deadline) .amount-field { grid-column: 2; grid-row: 2; display: grid; gap: 5px; }
+  .milestone-edit-row:not(.has-deadline) .remove-row { grid-column: 3; grid-row: 1; min-width: 44px; min-height: 44px; }
+  .milestone-edit-row:not(.has-deadline) .field { min-height: 46px; font-size: 16px; }
+  .milestone-edit-row:not(.has-deadline) .amount-field em { top: auto; bottom: 13px; }
+}
