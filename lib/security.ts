@@ -4,6 +4,9 @@
  * distributed rate limiting.
  */
 const buckets = new Map<string, { count: number; resetAt: number }>();
+export class RequestBodyError extends Error {
+  constructor(message: string, public readonly status: number) { super(message); this.name = "RequestBodyError"; }
+}
 
 export function clientKey(request: Request) {
   const forwarded = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
@@ -32,12 +35,12 @@ export function limited(request: Request, category: string, max: number, seconds
 
 export async function readJsonLimited(request: Request, maxBytes: number): Promise<unknown> {
   if (!request.headers.get("content-type")?.toLowerCase().startsWith("application/json")) {
-    throw new Error("Content-Type must be application/json.");
+    throw new RequestBodyError("Content-Type must be application/json.", 415);
   }
   const declared = request.headers.get("content-length");
-  if (declared && Number(declared) > maxBytes) throw new Error("Request body is too large.");
+  if (declared && Number(declared) > maxBytes) throw new RequestBodyError("Request body is too large.", 413);
   const reader = request.body?.getReader();
-  if (!reader) throw new Error("Missing request body.");
+  if (!reader) throw new RequestBodyError("Missing request body.", 400);
   let total = 0;
   const chunks: Uint8Array[] = [];
   try {
@@ -58,8 +61,10 @@ export async function readJsonLimited(request: Request, maxBytes: number): Promi
   let offset = 0;
   for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.length; }
   try {
-    return JSON.parse(new TextDecoder().decode(bytes)) as unknown;
+    const parsed = JSON.parse(new TextDecoder().decode(bytes)) as unknown;
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) throw new Error("Expected JSON object.");
+    return parsed;
   } catch {
-    throw new Error("Invalid JSON request.");
+    throw new RequestBodyError("Invalid JSON request.", 400);
   }
 }
