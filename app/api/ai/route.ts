@@ -1,3 +1,4 @@
+import { limited, readJsonLimited } from "@/lib/security";
 import { getSessionProfile, jsonError, sameOrigin } from "@/lib/auth";
 import { callOpenAI, outputText, RulexAiUpstreamError } from "@/lib/openai";
 
@@ -8,6 +9,8 @@ function safeText(value: unknown, max = 2000) {
 }
 
 export async function POST(request: Request) {
+  const throttle = limited(request, "ai-chat", 12, 60);
+  if (throttle) return throttle;
   if (!sameOrigin(request)) return jsonError("Invalid request origin.", 403);
   if (!await getSessionProfile(request)) return jsonError("Sign in to use RuleX AI.", 401);
 
@@ -15,7 +18,7 @@ export async function POST(request: Request) {
   if (!key) return Response.json({ error: "RuleX AI is not configured yet." }, { status: 503 });
 
   try {
-    const body = await request.json() as { mode?: unknown; question?: unknown; context?: unknown };
+    const body = await readJsonLimited(request, 15000) as { mode?: unknown; question?: unknown; context?: unknown };
     const mode = body.mode;
     const question = safeText(body.question, 600);
     if (!["help", "risk", "submission"].includes(String(mode)) || !question) {
