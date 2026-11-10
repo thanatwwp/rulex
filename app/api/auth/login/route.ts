@@ -1,8 +1,11 @@
+import { limited, readJsonLimited } from "@/lib/security";
 import { authError, jsonError, registerProfile, sameOrigin, startSession, verifiedWallet } from "@/lib/auth";
 export async function POST(request: Request) {
+  const throttle = limited(request, "auth-login", 20, 60);
+  if (throttle) return throttle;
   if (!sameOrigin(request)) return jsonError("Invalid request origin.", 403);
   try {
-    const input = await request.json() as { challengeId?: unknown; signature?: unknown; displayName?: unknown; role?: unknown };
+    const input = await readJsonLimited(request, 4096) as { challengeId?: unknown; signature?: unknown; displayName?: unknown; role?: unknown };
     const wallet = await verifiedWallet(input);
     const profile = await registerProfile(
       wallet,
