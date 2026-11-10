@@ -1631,3 +1631,186 @@ html.dark .timeline-row.is-disputed { background: #1d1519 !important; }
     grid-column: 2 / 3;
   }
 }
+
+/* RuleX responsive polish — shared desktop, tablet and phone improvements. */
+:root { --rx-focus: #0d9488; }
+html.dark { --rx-focus: #77e6dc; }
+body { overflow-x: clip; -webkit-font-smoothing: antialiased; }
+button, a, input, textarea, select { -webkit-tap-highlight-color: transparent; }
+button, [role="button"] { touch-action: manipulation; }
+:focus-visible { outline: 2px solid var(--rx-focus); outline-offset: 3px; }
+button:focus-visible, a:focus-visible, .field:focus-visible { outline-color: var(--rx-focus) !important; }
+.field { transition: border-color .18s ease, box-shadow .18s ease; }
+.primary-column, .detail-card, .auth-panel, .trust-grid article { transition: border-color .2s ease, box-shadow .2s ease; }
+html.light .primary-column, html.light .detail-card, html.light .auth-panel {
+  box-shadow: 0 10px 34px #24485a0b !important;
+}
+html.dark .primary-column, html.dark .detail-card, html.dark .auth-panel {
+  box-shadow: 0 16px 36px #00000028 !important;
+  border-color: #314650 !important;
+}
+html.dark .site-shell, html.dark .auth-shell, html.dark .trust-page {
+  background: radial-gradient(ellipse 70% 42% at 50% 0%, #12303e50, transparent 70%), #0d151c !important;
+}
+html.dark .topbar, html.dark .auth-topbar { background: #111c24ee !important; }
+.topbar { position: relative; z-index: 50; }
+.header-inner { gap: clamp(12px, 1.8vw, 22px); }
+.brand { white-space: nowrap; flex: none; }
+.header-actions { min-width: 0; }
+.header-actions .wallet-connected { white-space: nowrap; }
+.header-actions .header-link { justify-content: center; }
+.network-tag { flex: none; }
+.network-name { white-space: nowrap; }
+.page-heading { margin-bottom: 25px; }
+.page-heading h1 { text-wrap: balance; }
+.page-heading p { max-width: 660px; }
+.workspace-tabs [data-slot="tabs-trigger"] { min-height: 38px; }
+.project-row { min-height: 68px; }
+.project-row:focus-visible { position: relative; z-index: 1; }
+.detail-column { scroll-margin-top: 22px; }
+.milestone-edit-row.has-deadline .milestone-description-field,
+.milestone-edit-row.has-deadline .amount-field { display: grid; gap: 5px; min-width: 0; }
+.milestone-field-label { display: block; font-size: .72rem; font-weight: 750; color: #637e87; }
+html.dark .milestone-field-label { color: #aac1c7; }
+.milestone-edit-row.has-deadline .amount-field em { top: auto; bottom: 13px; }
+.timeline-row > div { min-width: 0; }
+.timeline-amount { text-align: right; }
+.token-detail code, .contract-info code, .trust-fact code { overflow-wrap: anywhere; }
+.rulex-ai-chat { overscroll-behavior: contain; }
+.rulex-ai-message p { overflow-wrap: anywhere; }
+.rulex-ai-launcher:focus-visible, .rulex-ai-close:focus-visible { outline-offset: 3px; }
+
+/* Medium screens: keep the account menu usable before it crowds the header. */
+@media (max-width: 1100px) {
+  .header-inner { padding-left: 22px; padding-right: 22px; }
+  .header-actions { gap: 6px; }
+  .workspace-grid { grid-template-columns: minmax(0, 1fr); }
+  .detail-column { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .detail-column .action-card, .detail-column .no-selection { grid-column: 1 / -1; }
+  .milestone-edit-row.has-deadline { grid-template-columns: 28px minmax(0,1fr) minmax(105px,.25fr) minmax(185px,.4fr) 40px; }
+  .milestone-edit-row.has-deadline .deadline-field { grid-column: auto; }
+}
+@media (max-width: 900px) {
+  .header-inner { min-height: 70px; }
+  .mobile-menu { display: inline-flex !important; flex: none; width: 44px; height: 44px; color: var(--foreground) !important; }
+  .header-actions {
+    display: none !important;
+    position: absolute; top: calc(100% - 1px); left: 16px; right: 16px;
+    z-index: 70; flex-direction: column; align-items: stretch; gap: 8px;
+    padding: 15px;
+    background: var(--card) !important; border: 1px solid var(--border) !important;
+    border-radius: 0 0 16px 16px; box-shadow: 0 24px 42px #0d273333 !important;
+  }
+  .header-actions.is-open { display: flex !important; }
+  .header-actions .profile-badge {
+    display: grid !important; order: -1; margin: 0; width: 100%;
+    padding: 3px 5px 13px; border: 0; border-bottom: 1px solid var(--border);
+  }
+  .header-actions .header-link, .header-actions .wallet-connected,
+  .header-actions .button { min-height: 46px; width: 100%; justify-content: center; }
+  .header-actions .change-wallet-button { flex: none; }
+  .header-actions .logout-button { border-top: 1px solid var(--border); padding-top: 13px; }
+  html.dark .header-actions { background: #13232d !important; box-shadow: 0 24px 44px #0009 !important; }
+  html.dark .mobile-menu { color: #dbecef !important; }
+}
+@media (max-width: 780px) {
+  .auth-layout { padding-top: 30px; }
+  .auth-intro h1 { text-wrap: balance; }
+  .auth-panel { box-shadow: 0 14px 34px #00000020 !important; }
+  .trust-actions .button { white-space: normal; }
+  .milestone-edit-row.has-deadline {
+    grid-template-columns: 28px minmax(0,1fr) minmax(125px,.4fr) 44px;
+    align-items: end;
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+  }
+  .milestone-edit-row.has-deadline .milestone-number { align-self: center; }
+  .milestone-edit-row.has-deadline .milestone-description-field { grid-column: 2 / 4; grid-row: 1; }
+  .milestone-edit-row.has-deadline .amount-field { grid-column: 2 / 3; grid-row: 2; }
+  .milestone-edit-row.has-deadline .deadline-field { grid-column: 3 / 5; grid-row: 2; }
+  .milestone-edit-row.has-deadline .remove-row { grid-column: 4; grid-row: 1; align-self: center; }
+}
+@media (max-width: 650px) {
+  .header-inner { padding: 0 16px; }
+  .network-tag { font-size: .68rem; padding: 7px 9px; gap: 7px; }
+  .testnet-label { display: none; }
+  .app-container { padding: 22px 14px 104px; }
+  .page-heading { gap: 16px; margin-bottom: 20px; }
+  .page-heading h1 { font-size: clamp(1.75rem,7vw,2.1rem); }
+  .heading-actions { padding: 0; }
+  .heading-actions .button { min-height: 46px; font-size: .82rem; }
+  .workspace-header { padding: 12px; }
+  .workspace-tabs { height: 44px !important; }
+  .workspace-tabs [data-slot="tabs-trigger"] { min-height: 38px; font-size: .74rem; }
+  .tab-body { padding: 21px 15px; }
+  .section-header { margin-bottom: 18px; }
+  .section-header h2 { font-size: 1.16rem; }
+  .milestone-header { align-items: flex-start; flex-wrap: wrap; }
+  .draft-button { min-height: 44px; }
+  .detail-card { padding: 20px 16px; }
+  .detail-column { grid-template-columns: 1fr; gap: 14px; }
+  .detail-column > * { grid-column: 1 / -1; }
+  .detail-column { scroll-margin-top: 14px; }
+  .project-row { padding: 14px; }
+  .project-main strong { max-width: 100%; }
+  .project-amount { margin-left: 0; width: auto; }
+  .timeline-row { grid-template-columns: 28px minmax(0,1fr); }
+  .timeline-amount { grid-column: 2; text-align: left; margin-top: 4px; }
+  .meter-caption, .meter-foot { flex-wrap: wrap; }
+  .party-list > div { flex-wrap: wrap; gap: 6px; }
+  .party-list code { overflow-wrap: anywhere; }
+  .token-detail { flex-wrap: wrap; }
+  .token-detail code { margin-left: 0; text-align: left; flex: 1 1 200px; }
+  .form-footer .button, .lookup-controls .button { min-height: 46px; }
+  .notice, .transaction-banner { gap: 10px; }
+  .notice button, .transaction-banner a { margin-left: 0; min-height: 44px; }
+  .auth-topbar, .public-topbar { gap: 8px; }
+  .auth-layout { padding: 24px 16px 40px; }
+  .auth-intro { padding-left: 13px; }
+  .auth-intro h1 { font-size: clamp(2.1rem,9vw,3.3rem); line-height: 1.08; }
+  .auth-panel { padding: 22px 17px; }
+  .auth-wallet { flex-wrap: wrap; gap: 12px; }
+  .auth-wallet > div { min-width: 0; }
+  .auth-wallet button { min-height: 44px; margin-left: auto; }
+  .role-options { gap: 9px; }
+  .role-card { min-width: 0; padding: 13px 11px; }
+  .auth-footer { padding: 12px 16px 24px; }
+  .rulex-ai-launcher { right: 14px; bottom: max(12px,env(safe-area-inset-bottom)); }
+  .rulex-ai-panel {
+    right: 10px; left: 10px; width: auto;
+    bottom: calc(82px + env(safe-area-inset-bottom));
+    max-height: calc(100dvh - 105px - env(safe-area-inset-bottom));
+    border-radius: 16px;
+  }
+  .rulex-ai-character-stage { min-height: 100px; }
+  .rulex-ai-character-stage > .rulex-mascot { width: 100px; height: 100px; }
+  .rulex-ai-actions { grid-template-columns: 1fr; }
+  .rulex-ai-actions button { min-height: 44px; }
+  .rulex-ai-input { min-height: 48px; }
+  .rulex-ai-input input { font-size: 16px; }
+  .rulex-ai-input button { min-height: 38px; min-width: 38px; }
+  .rulex-ai-close { min-height: 44px; min-width: 44px; }
+  html.dark .public-content { padding: 28px 16px 44px !important; }
+}
+@media (max-width: 480px) {
+  .network-name { display: none; }
+  .network-tag:after { content: "SEPOLIA"; font-weight: 750; letter-spacing: .04em; }
+  .milestone-edit-row.has-deadline {
+    grid-template-columns: 26px minmax(0,1fr) 44px;
+    gap: 8px;
+  }
+  .milestone-edit-row.has-deadline .milestone-description-field { grid-column: 2 / 3; grid-row: 1; }
+  .milestone-edit-row.has-deadline .amount-field { grid-column: 2 / 3; grid-row: 2; }
+  .milestone-edit-row.has-deadline .deadline-field { grid-column: 2 / 4; grid-row: 3; }
+  .milestone-edit-row.has-deadline .remove-row { grid-column: 3; grid-row: 1; }
+  .milestone-edit-row.has-deadline .field { min-height: 46px; padding-left: 12px; padding-right: 12px; font-size: 16px; }
+  .milestone-edit-row.has-deadline .amount-field input { padding-right: 48px !important; }
+  .milestone-edit-row.has-deadline .amount-field em { right: 14px; bottom: 15px; font-size: .73rem; }
+  .milestone-edit-row.has-deadline .deadline-field .field { min-width: 0; }
+  .form-total { flex-wrap: wrap; }
+  .form-total strong { font-size: 1.17rem; }
+  .auth-topbar .auth-network, .public-topbar .auth-network { font-size: .59rem; letter-spacing: .03em; }
+  .auth-topbar .topbar-utilities, .public-topbar .topbar-utilities { gap: 5px; }
+  .auth-topbar .theme-toggle, .public-topbar .theme-toggle { min-height: 40px; min-width: 40px; }
+}
