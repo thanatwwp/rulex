@@ -57,3 +57,19 @@ next-env.d.ts
 *.db
 /keystore/
 /wallets/
+
+# Keep private AI conversations, transcript exports, and agent logs out of source control.
+*.chatlog
+*.transcript
+*.conversation.json
+chat-history/
+chat_history/
+chatgpt-export/
+chatgpt-exports/
+conversations/
+transcripts/
+.ai-chat/
+.ai-history/
+.cursor/
+.claude/
+.history/

@@ -58,7 +58,7 @@ The interface shows statuses, milestone progress, balances, the token address, a
 - On-chain transactions require a real MetaMask wallet and Sepolia ETH; the browser preview does not simulate them.
 - Accounts are wallet based; there are no passwords or email addresses. Registration signatures have a one-use five-minute challenge and site sessions expire after seven days.
 
-No open-source license is currently granted for this repository. The Solidity source files use the SPDX identifier `UNLICENSED`.
+RuleX's original application and Solidity source code is released under the **MIT License**. See [LICENSE](LICENSE). Third-party libraries, icons, and other bundled assets remain subject to their own licenses. This is an educational Sepolia prototype, not audited for handling real funds.
 
 
 ## Trust and safety
@@ -85,3 +85,10 @@ The production frontend uses RuleXEscrowV2 at `0xD979f8a7013aD57468Ffc8D5FDb5dA9
 For protected delivery in this prototype, the freelancer should submit only a preview/proof first. Only a non-secret final-delivery receipt or public reference should be put in the transaction. Ethereum transaction calldata is public and may be visible in the mempool before confirmation; do not send encryption keys, passwords, private links, wallet keys, or access tokens on-chain. Deliver confidential files and access credentials separately through a secure off-chain channel. Atomic payment does not keep the delivery text confidential.
 
 V2 is a new smart contract and cannot modify already deployed V1 projects. Existing V1 projects continue to follow the original rules. The deployed Sepolia V2 address used by the production frontend is `0xD979f8a7013aD57468Ffc8D5FDb5dA9ae8b7Dac9`, with the existing MockRUSD token address `0x73DB6FBC1f88F98156e225A1a0947065567bF178`.
+
+
+## Source repository privacy and AI interactions
+
+The GitHub repository contains source code, not private ChatGPT session transcripts. The optional RuleX AI assistant sends the user's prompt and limited project context to a server-side AI API when explicitly used; this feature is separate from this repository and does not commit chat histories to GitHub. Do not include private wallet credentials, customer information, confidential work, or API keys in AI prompts or public project descriptions. AI outputs and requests may be handled by the selected API provider under its service/data policies. For privacy, chat/conversation transcript exports are ignored by Git.
+
+The RuleX website signs in users with their MetaMask wallet, not through ChatGPT account authentication.
