@@ -1,4 +1,5 @@
 import { ExternalLink, LockKeyhole, ShieldCheck, WalletCards } from "lucide-react";
+import Link from "next/link";
 import ThemeToggle from "@/components/theme-toggle";
 
 const ESCROW = "0xD979f8a7013aD57468Ffc8D5FDb5dA9ae8b7Dac9";
@@ -14,7 +15,7 @@ export default function TrustPage() {
   return (
     <div className="trust-page">
       <header className="public-topbar">
-        <a className="brand" href="/" aria-label="RuleX home"><span className="brand-mark">R<span>x</span></span><strong>RuleX</strong></a>
+        <Link className="brand" href="/" aria-label="RuleX home"><span className="brand-mark">R<span>x</span></span><strong>RuleX</strong></Link>
         <div className="topbar-utilities"><ThemeToggle compact /><span className="auth-network"><span className="network-indicator" /> SEPOLIA TESTNET</span></div>
       </header>
       <main className="trust-page-main">
@@ -46,7 +47,7 @@ export default function TrustPage() {
           <p>Check that MetaMask shows <strong>Ethereum Sepolia</strong>, confirm the destination contract matches the published address above, and read the transaction details before approving. Do not continue if any website asks for your recovery phrase or private key.</p>
         </section>
       </main>
-      <footer className="auth-footer"><span>RuleX · University prototype · Not audited</span><span><a href="/">Return home</a></span></footer>
+      <footer className="auth-footer"><span>RuleX · University prototype · Not audited</span><span><Link href="/">Return home</Link></span></footer>
     </div>
   );
 }

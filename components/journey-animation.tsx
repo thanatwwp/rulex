@@ -94,13 +94,15 @@ export default function JourneyAnimation() {
 
   useEffect(() => {
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
-    if (media.matches) setPlaying(false);
     const updateVisibility = () => setPageVisible(!document.hidden);
-    updateVisibility();
+    const frame = window.requestAnimationFrame(() => {
+      if (media.matches) setPlaying(false);
+      updateVisibility();
+    });
     document.addEventListener("visibilitychange", updateVisibility);
     const observer = new IntersectionObserver(([entry]) => setVisible(entry.isIntersecting), { threshold: 0.2 });
     if (container.current) observer.observe(container.current);
-    return () => { observer.disconnect(); document.removeEventListener("visibilitychange", updateVisibility); };
+    return () => { window.cancelAnimationFrame(frame); observer.disconnect(); document.removeEventListener("visibilitychange", updateVisibility); };
   }, []);
 
   useEffect(() => {
