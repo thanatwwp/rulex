@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { BrowserProvider, Contract, Interface, getAddress, isAddress, parseUnits, type Eip1193Provider } from "ethers";
+import Link from "next/link";
+import { BrowserProvider, Contract, Interface, getAddress, isAddress, parseUnits, type ContractTransactionResponse, type Eip1193Provider } from "ethers";
 import { toast } from "sonner";
 import { AlertTriangle, ArrowRight, ArrowUpRight, Check, CheckCircle2, ChevronRight, CircleHelp, Copy, ExternalLink, FileCheck2, FilePlus2, Layers3, LoaderCircle, LockKeyhole, LogOut, Menu, Plus, RefreshCw, ShieldCheck, Sparkles, Wallet, X } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -26,9 +27,14 @@ const DEFAULT_ESCROW = "0xD979f8a7013aD57468Ffc8D5FDb5dA9ae8b7Dac9";
 const EXPLORER = "https://sepolia.etherscan.io";
 type DraftMilestone = { description: string; amount: string; deadline: string };
 type TxState = { label: string; hash: string; pending: boolean } | null;
+type RawProject = {
+  client: string; freelancer: string; title: string; projectDescription: string;
+  totalAmount: bigint; escrowBalance: bigint; currentMilestone: bigint | number;
+  status: bigint | number; clientCancellationApproved: boolean; freelancerCancellationApproved: boolean;
+};
 const STARTER: DraftMilestone[] = [{ description: "Design", amount: "30", deadline: "" }, { description: "Development", amount: "40", deadline: "" }, { description: "Final delivery", amount: "30", deadline: "" }];
 
-function projectFromRaw(raw: any, id: number): Project {
+function projectFromRaw(raw: RawProject, id: number): Project {
   return { id, client: raw.client, freelancer: raw.freelancer, title: raw.title, description: raw.projectDescription,
     totalAmount: raw.totalAmount, escrowBalance: raw.escrowBalance, currentMilestone: Number(raw.currentMilestone),
     status: Number(raw.status), clientCancellationApproved: raw.clientCancellationApproved,
@@ -46,7 +52,6 @@ export default function Home() {
   const [account, setAccount] = useState("");
   const [chainId, setChainId] = useState<bigint | null>(null);
   const [escrowAddress, setEscrowAddress] = useState(DEFAULT_ESCROW);
-  const [addressInput, setAddressInput] = useState(DEFAULT_ESCROW);
   const [tokenAddress, setTokenAddress] = useState("");
   const [symbol, setSymbol] = useState("RUSD");
   const [decimals, setDecimals] = useState(18);
@@ -62,6 +67,7 @@ export default function Home() {
   const [txState, setTxState] = useState<TxState>(null);
   const [tab, setTab] = useState("projects");
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [nowSeconds, setNowSeconds] = useState(0);
   const [mobileMenu, setMobileMenu] = useState(false);
   const [changingWallet, setChangingWallet] = useState(false);
   const [title, setTitle] = useState("");
@@ -87,7 +93,6 @@ export default function Home() {
   const current = selectedMilestones[selected?.currentMilestone ?? -1];
   const isV2 = contractVersion >= 2;
   const isArbiter = Boolean(isV2 && arbiter && account && arbiter.toLowerCase() === account.toLowerCase());
-  const nowSeconds = Math.floor(Date.now() / 1000);
   const projectAllowance = selected ? (allowance < selected.totalAmount ? allowance : selected.totalAmount) : 0n;
   const total = useMemo(() => draft.reduce((n, m) => n + (Number(m.amount) || 0), 0), [draft]);
 
@@ -95,6 +100,13 @@ export default function Home() {
     if (!window.ethereum) throw new Error("MetaMask is not available in this browser.");
     if (!providerRef.current) providerRef.current = new BrowserProvider(window.ethereum);
     return providerRef.current;
+  }, []);
+
+  useEffect(() => {
+    const update = () => setNowSeconds(Math.floor(Date.now() / 1000));
+    const frame = window.requestAnimationFrame(update);
+    const interval = window.setInterval(update, 60_000);
+    return () => { window.cancelAnimationFrame(frame); window.clearInterval(interval); };
   }, []);
 
   useEffect(() => {
@@ -194,7 +206,7 @@ export default function Home() {
       else { setSelected(null); setSelectedMilestones([]); }
     } catch (error) { toast.error(cleanError(error)); }
     finally { setLoading(false); }
-  }, [account, escrowAddress, loadProject, provider, selected?.id]);
+  }, [account, escrowAddress, loadProject, provider, selected]);
 
   const connect = async () => {
     try {
@@ -228,15 +240,15 @@ export default function Home() {
     finally { setChangingWallet(false); }
   };
 
+  /* External wallet and storage synchronization intentionally updates React state. */
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     const saved = localStorage.getItem("rulex-escrow");
     if (saved && isAddress(saved) && getAddress(saved).toLowerCase() !== LEGACY_V1_ESCROW.toLowerCase()) {
       setEscrowAddress(getAddress(saved));
-      setAddressInput(getAddress(saved));
     } else {
       localStorage.setItem("rulex-escrow", DEFAULT_ESCROW);
       setEscrowAddress(DEFAULT_ESCROW);
-      setAddressInput(DEFAULT_ESCROW);
     }
     if (!window.ethereum) return;
     const p = provider();
@@ -258,6 +270,7 @@ export default function Home() {
   }, [provider]);
 
   useEffect(() => { if (walletMatches && onSepolia) void refresh(); }, [walletMatches, account, onSepolia, escrowAddress]); // eslint-disable-line react-hooks/exhaustive-deps
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   useEffect(() => {
     type Context = { registerTool: (tool: { name: string; title: string; description: string; inputSchema: object; annotations: { readOnlyHint: boolean; untrustedContentHint: boolean }; execute: (input: unknown) => unknown }, options: { signal: AbortSignal }) => void | Promise<void> };
@@ -273,8 +286,9 @@ export default function Home() {
         const value = input as { title?: unknown; description?: unknown; freelancer?: unknown; milestones?: unknown };
         if (!value || typeof value.title !== "string" || typeof value.description !== "string" || typeof value.freelancer !== "string" || !Array.isArray(value.milestones) || value.milestones.length < 1 || value.milestones.length > 3 || value.milestones.some(m => !m || typeof m.description !== "string" || typeof m.amount !== "string" || !/^\d+(\.\d{1,18})?$/.test(m.amount) || Number(m.amount) <= 0)) throw new Error("Provide a title, brief, freelancer wallet, and one to three positive RUSD milestones.");
         if (!isAddress(value.freelancer)) throw new Error("Enter a valid freelancer address.");
+        const milestones = value.milestones as Array<{ description: string; amount: string }>;
         setTitle(value.title.slice(0, 100)); setDescription(value.description.slice(0, 1600)); setFreelancer(value.freelancer);
-        setDraft(value.milestones.map((m, i) => ({ description: m.description.slice(0, 240), amount: m.amount, deadline: draft[i]?.deadline || "" })));
+        setDraft(items => milestones.map((m, i) => ({ description: m.description.slice(0, 240), amount: m.amount, deadline: items[i]?.deadline || "" })));
         setDraftNote("Editable draft — review before signing."); setTab("create");
         return { staged: true, milestoneCount: value.milestones.length, onChain: false };
       },
@@ -287,7 +301,7 @@ export default function Home() {
     catch (error) { toast.error(cleanError(error)); }
   };
 
-  const transact = async (label: string, action: (escrow: Contract, token: Contract) => Promise<any>, focusId?: number) => {
+  const transact = async (label: string, action: (escrow: Contract, token: Contract) => Promise<ContractTransactionResponse>, focusId?: number) => {
     if (!ready) { toast.error("Connect MetaMask on Sepolia first."); return false; }
     setBusy(label);
     try {
@@ -371,20 +385,13 @@ export default function Home() {
     try { await loadProject(id, account, escrowAddress, tokenAddress); setTab("projects"); }
     catch (error) { toast.error(cleanError(error)); }
   };
-  const useContract = () => {
-    if (!isAddress(addressInput)) { toast.error("Enter a valid RuleXEscrow address."); return; }
-    const next = getAddress(addressInput);
-    localStorage.setItem("rulex-escrow", next);
-    setEscrowAddress(next); setSelected(null); setProjects([]); setSettingsOpen(false);
-    toast.info("Checking this escrow contract on Sepolia…");
-  };
   const actionBusy = Boolean(busy);
   const currentStatus = selected ? statusName[selected.status] : "";
 
   if (!sessionChecked) return <div className="auth-gate"><div className="auth-gate-panel"><span className="brand-mark">R<span>x</span></span><p>Loading your RuleX account…</p></div></div>;
   if (!profile) return <div className="public-home">
     <header className="public-topbar">
-      <a className="brand" href="/" aria-label="RuleX home"><span className="brand-mark">R<span>x</span></span><strong>RuleX</strong></a>
+      <Link className="brand" href="/" aria-label="RuleX home"><span className="brand-mark">R<span>x</span></span><strong>RuleX</strong></Link>
       <div className="topbar-utilities"><ThemeToggle compact /><span className="auth-network"><span className="network-indicator" /> SEPOLIA TESTNET</span></div>
     </header>
     <main className="public-content">
@@ -403,7 +410,7 @@ export default function Home() {
   return <div className="site-shell">
     <Toaster richColors position="bottom-right" />
     <header className="topbar"><div className="header-inner">
-      <a className="brand" href="/" aria-label="RuleX home"><span className="brand-mark">R<span>x</span></span><strong>RuleX</strong></a>
+      <Link className="brand" href="/" aria-label="RuleX home"><span className="brand-mark">R<span>x</span></span><strong>RuleX</strong></Link>
       <span className="network-tag" title="Ethereum Sepolia testnet"><span className="network-indicator" /><span className="network-name">Ethereum Sepolia</span><span className="testnet-label">TESTNET</span></span>
       <div className="header-spacer" />
       <ThemeToggle compact />
@@ -440,7 +447,7 @@ export default function Home() {
           <div className="workspace-header"><TabsList className="workspace-tabs"><TabsTrigger value="projects">Projects</TabsTrigger><TabsTrigger value="create">Create agreement</TabsTrigger><TabsTrigger value="token">Demo token</TabsTrigger></TabsList><span className="workspace-context">{ready ? projects.length + " of your projects" : "Connect a wallet to view projects"}</span></div>
           <TabsContent value="projects" className="tab-body">
             <div className="section-header"><div><h2>Your agreements</h2><p>Projects you created or joined as the freelancer.</p></div></div>
-            {ready && projects.length ? <div className="project-list">{projects.map(pr => <button key={pr.id} className={"project-row " + (selected?.id === pr.id ? "is-selected" : "")} onClick={() => void loadProject(pr.id, account, escrowAddress, tokenAddress).then(() => { if (window.matchMedia("(max-width: 1240px)").matches) document.getElementById("rulex-project-details")?.scrollIntoView({ behavior: "smooth", block: "start" }); }).catch(error => toast.error(cleanError(error)))}><span className="project-icon"><Layers3 size={19} /></span><span className="project-main"><strong>{pr.title || "Project #" + pr.id}</strong><small>#{pr.id} · {pr.client.toLowerCase() === account.toLowerCase() ? "You are the client" : "You are the freelancer"}</small></span><span className={"status-pill status-" + pr.status}>{statusName[pr.status]}</span><span className="project-amount">{money(pr.totalAmount, decimals)} {symbol}</span><ChevronRight size={17} className="project-chevron" /></button>)}</div>
+            {ready && projects.length ? <div className="project-list">{projects.map(pr => <button key={pr.id} type="button" aria-pressed={selected?.id === pr.id} className={"project-row " + (selected?.id === pr.id ? "is-selected" : "")} onClick={() => void loadProject(pr.id, account, escrowAddress, tokenAddress).then(() => { if (window.matchMedia("(max-width: 1240px)").matches) document.getElementById("rulex-project-details")?.scrollIntoView({ behavior: "smooth", block: "start" }); }).catch(error => toast.error(cleanError(error)))}><span className="project-icon"><Layers3 size={19} /></span><span className="project-main"><strong>{pr.title || "Project #" + pr.id}</strong><small>#{pr.id} · {pr.client.toLowerCase() === account.toLowerCase() ? "You are the client" : "You are the freelancer"}</small></span><span className={"status-pill status-" + pr.status}>{statusName[pr.status]}</span><span className="project-amount">{money(pr.totalAmount, decimals)} {symbol}</span><ChevronRight size={17} className="project-chevron" /></button>)}</div>
               : <div className="empty-state"><div className="empty-icon"><FilePlus2 size={23} /></div><h3>{ready ? "No agreements in this wallet yet" : "Your projects will appear here"}</h3><p>{ready ? "Create an agreement, or open a project by ID if someone invited you." : "Connect MetaMask on Sepolia to see agreements you created or joined."}</p><button className="button button-outline" onClick={() => setTab("create")}>Create your first agreement <ArrowRight size={16} /></button></div>}
             <div className="lookup-panel"><div><strong>Open a project by ID</strong><span>Use the project number from a confirmed creation transaction.</span></div><div className="lookup-controls"><input className="field" type="number" min="1" placeholder="Project ID" aria-label="Project ID" value={projectIdInput} onChange={e => setProjectIdInput(e.target.value)} onKeyDown={e => { if (e.key === "Enter") void openId(); }} /><button className="button button-outline" disabled={!ready} onClick={() => void openId()}>Open</button></div></div>
           </TabsContent>

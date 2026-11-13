@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { AlertTriangle, ArrowUp, CheckCircle2, FileSearch, MessageCircle, ShieldCheck, Sparkles, WandSparkles, X } from "lucide-react";
 
 type AiState = "idle" | "thinking" | "success" | "warning";
@@ -100,6 +100,7 @@ export default function RulexAiAssistant({ activeTab, project, draft, onOpenCrea
   const [open, setOpen] = useState(false);
   const [state, setState] = useState<AiState>("idle");
   const [input, setInput] = useState("");
+  const launcherRef = useRef<HTMLButtonElement>(null);
   const [messages, setMessages] = useState<Message[]>([
     { role: "assistant", text: "Hi! I’m RuleX AI. I can help structure milestones, flag agreement risks, review submitted work, or explain what happens next." },
   ]);
@@ -163,21 +164,42 @@ export default function RulexAiAssistant({ activeTab, project, draft, onOpenCrea
     void ask("submission", "Compare the current milestone submission with the agreed milestone. Summarize what appears satisfied, what is uncertain, and what the client should manually verify before releasing payment.");
   };
 
+  const closePanel = () => {
+    setOpen(false);
+    window.requestAnimationFrame(() => launcherRef.current?.focus());
+  };
+
   return (
     <>
       {!open && <div className="rulex-ai-peek" aria-hidden="true">Need help? Ask RuleX AI</div>}
-      <button className={`rulex-ai-launcher state-${state}`} type="button" aria-label="Open RuleX AI" onClick={() => setOpen(value => !value)}>
+      <button
+        ref={launcherRef}
+        className={`rulex-ai-launcher state-${state}`}
+        type="button"
+        aria-label={open ? "Close RuleX AI" : "Open RuleX AI"}
+        aria-expanded={open}
+        aria-controls="rulex-ai-panel"
+        aria-haspopup="dialog"
+        onClick={() => setOpen(value => !value)}
+      >
         <RulexMascot state={state} compact />
         <span className="rulex-ai-launcher-copy"><strong>RuleX AI</strong><small>{state === "thinking" ? "Analyzing…" : state === "warning" ? "Check needed" : state === "success" ? "Ready" : "Online"}</small></span>
       </button>
 
-      {open && <section className="rulex-ai-panel" aria-label="RuleX AI assistant">
+      {open && <section
+        id="rulex-ai-panel"
+        className="rulex-ai-panel"
+        role="dialog"
+        aria-modal="false"
+        aria-labelledby="rulex-ai-title"
+        onKeyDown={event => { if (event.key === "Escape") closePanel(); }}
+      >
         <header className="rulex-ai-panel-header">
           <div className="rulex-ai-title">
             <RulexMascot state={state} compact />
-            <div><strong>RuleX AI</strong><span>Escrow intelligence</span></div>
+            <div><strong id="rulex-ai-title">RuleX AI</strong><span>Escrow intelligence</span></div>
           </div>
-          <button type="button" className="rulex-ai-close" aria-label="Close RuleX AI" onClick={() => setOpen(false)}><X size={18} /></button>
+          <button type="button" className="rulex-ai-close" aria-label="Close RuleX AI" onClick={closePanel}><X size={18} /></button>
         </header>
 
         <div className="rulex-ai-character-stage">
@@ -194,7 +216,7 @@ export default function RulexAiAssistant({ activeTab, project, draft, onOpenCrea
           <button type="button" onClick={reviewSubmission}><FileSearch size={17} /><span><strong>Review submission</strong><small>Compare work with the milestone</small></span></button>
         </div>
 
-        <div className="rulex-ai-chat" aria-live="polite">
+        <div className="rulex-ai-chat" aria-live="polite" aria-busy={state === "thinking"}>
           {messages.slice(-6).map((message, index) => <div key={index} className={`rulex-ai-message is-${message.role} ${message.tone ? "tone-" + message.tone : ""}`}>
             {message.role === "assistant" && <span className="rulex-ai-message-icon">{message.tone === "warning" ? <AlertTriangle size={14} /> : message.tone === "success" ? <CheckCircle2 size={14} /> : <Sparkles size={14} />}</span>}
             <p>{message.text}</p>
@@ -204,7 +226,7 @@ export default function RulexAiAssistant({ activeTab, project, draft, onOpenCrea
 
         <form className="rulex-ai-input" onSubmit={event => { event.preventDefault(); void ask("help", input); }}>
           <MessageCircle size={16} />
-          <input value={input} onChange={event => setInput(event.target.value)} maxLength={600} placeholder="Ask RuleX AI anything…" aria-label="Ask RuleX AI" />
+          <input value={input} onChange={event => setInput(event.target.value)} maxLength={600} autoComplete="off" enterKeyHint="send" placeholder="Ask RuleX AI anything…" aria-label="Ask RuleX AI" />
           <button type="submit" aria-label="Send to RuleX AI" disabled={!input.trim() || state === "thinking"}><ArrowUp size={16} /></button>
         </form>
 

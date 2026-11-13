@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { BrowserProvider, getAddress, isAddress, type Eip1193Provider } from "ethers";
 import { ArrowRight, BriefcaseBusiness, Check, Fingerprint, LockKeyhole, LogIn, Orbit, ShieldCheck, Sparkles, Wallet } from "lucide-react";
 import { cleanError, shortAddress } from "@/lib/rulex";
@@ -89,7 +90,7 @@ export default function AuthScreen({ mode }: { mode: "register" | "login" }) {
   }
 
   return <div className="auth-shell">
-    <header className="auth-topbar"><a href="/" className="brand"><span className="brand-mark">R<span>x</span></span><strong>RuleX</strong></a><div className="topbar-utilities"><ThemeToggle compact /><span className="auth-network"><span className="network-indicator" /> SEPOLIA TESTNET</span></div></header>
+    <header className="auth-topbar"><Link href="/" className="brand"><span className="brand-mark">R<span>x</span></span><strong>RuleX</strong></Link><div className="topbar-utilities"><ThemeToggle compact /><span className="auth-network"><span className="network-indicator" /> SEPOLIA TESTNET</span></div></header>
     <main className="auth-layout">
       <section className="auth-intro"><span className="auth-kicker">SECURE WALLET SIGN-IN</span><h1>{signup ? "Secure milestone work with clear approvals." : "Sign in to your RuleX test account."}</h1><p>Agree on work. Secure test funds in escrow. Release each milestone when it is approved.</p>
         <div className="auth-sequence"><div><span>01</span><strong>Connect</strong><small>Your MetaMask wallet is your account.</small></div><div><span>02</span><strong>Sign</strong><small>A message proves you control the wallet. No gas fee.</small></div><div><span>03</span><strong>Collaborate</strong><small>Create or accept agreements on Sepolia.</small></div></div>
